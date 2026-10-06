@@ -1,0 +1,2 @@
+CONTAINER ID   IMAGE                  COMMAND                  CREATED         STATUS         PORTS                                         NAMES
+ee52946f7e6d   16-calculator:latest   "dotnet CalculatorWe…"   4 seconds ago   Up 3 seconds   0.0.0.0:5016->5016/tcp, [::]:5016->5016/tcp   calculator-16

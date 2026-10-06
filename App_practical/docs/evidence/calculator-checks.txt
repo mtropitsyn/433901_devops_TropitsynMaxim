@@ -1,0 +1,24 @@
+PASS: addition
+PASS: subtraction
+PASS: negative multiplication
+PASS: fractional division
+PASS: decimal precision
+PASS: comma input
+PASS: dot input
+PASS: reject invalid number []
+PASS: reject invalid number [abc]
+PASS: reject invalid number [1,2.3]
+PASS: reject invalid number [1 000]
+PASS: reject invalid number [NaN]
+PASS: reject invalid number [1e3]
+PASS: reject invalid number [79228162514264337593543950336]
+PASS: division by zero
+PASS: addition overflow
+PASS: subtraction overflow
+PASS: multiplication overflow
+PASS: unknown operation
+PASS: Russian result format
+PASS: controller result
+PASS: controller handles division by zero
+PASS: controller handles malformed input
+Checks passed: 23

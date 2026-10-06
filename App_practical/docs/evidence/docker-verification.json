@@ -1,0 +1,23 @@
+{
+  "Verified": true,
+  "CheckedAt": "2026-10-06T11:05:20.4056153+05:00",
+  "StudentNumber": 16,
+  "Port": 5016,
+  "Image": "16-calculator:latest",
+  "ImageId": "sha256:03112ea284e3ccb418002b291f0d186ab85ffb27ca34ec27ae9d8cb3852c321f",
+  "Container": "calculator-16",
+  "ContainerId": "ee52946f7e6d1d6656e986953c09796654ce1e48edc027e6f6b5acae4ac0f314",
+  "User": "1654",
+  "Environment": "Production",
+  "CalculatorChecks": 23,
+  "ContainerHttpChecks": 13,
+  "StopState": "exited",
+  "InaccessibleAfterStop": true,
+  "RestartHealth": "200 OK",
+  "FinalState": "exited",
+  "FinalExitCode": 0,
+  "DockerDesktop": "4.94.0",
+  "DockerEngine": "29.8.2",
+  "Wsl": "3.0.1",
+  "GithubPublished": false
+}

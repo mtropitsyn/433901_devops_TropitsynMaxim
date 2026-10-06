@@ -1,0 +1,40 @@
+13 unique blobs; 168 bounded chunks; 318.5 MiB total
+Downloaded 8/168 chunks (14.0 MiB)
+Downloaded 16/168 chunks (28.9 MiB)
+Downloaded 24/168 chunks (44.8 MiB)
+Downloaded 32/168 chunks (58.8 MiB)
+Downloaded 40/168 chunks (71.6 MiB)
+Retry 1/4: sha256:ee1492dc990ed bytes 6291456-8388607: curl: (56) schannel: server closed abruptly (missing close_notify)
+Retry 1/4: sha256:ea66d5482c94d bytes 23068672-25165823: curl: (28) Connection timed out after 15001 milliseconds
+Retry 1/4: sha256:ea66d5482c94d bytes 20971520-23068671: curl: (28) Connection timed out after 15005 milliseconds
+Downloaded 48/168 chunks (86.2 MiB)
+Downloaded 56/168 chunks (102.2 MiB)
+Downloaded 64/168 chunks (117.8 MiB)
+Downloaded 72/168 chunks (133.8 MiB)
+Downloaded 80/168 chunks (149.8 MiB)
+Downloaded 88/168 chunks (165.8 MiB)
+Downloaded 96/168 chunks (181.8 MiB)
+Downloaded 104/168 chunks (197.8 MiB)
+Downloaded 112/168 chunks (213.8 MiB)
+Downloaded 120/168 chunks (229.8 MiB)
+Downloaded 128/168 chunks (245.8 MiB)
+Downloaded 136/168 chunks (261.8 MiB)
+Downloaded 144/168 chunks (277.8 MiB)
+Downloaded 152/168 chunks (293.5 MiB)
+Retry 1/4: sha256:7fb0f141c3bbf bytes 2097152-4194303: curl: (56) schannel: server closed abruptly (missing close_notify)
+Downloaded 160/168 chunks (306.3 MiB)
+Downloaded 168/168 chunks (318.5 MiB)
+Verified SHA256 sha256:a23af37ba126607678
+Verified SHA256 sha256:774043ccc8ccd0d083
+Verified SHA256 sha256:f16c21f09acad5dea1
+Verified SHA256 sha256:dd379948ad63de4800
+Verified SHA256 sha256:ea66d5482c94dec749
+Verified SHA256 sha256:22b2c17d9e73347f93
+Verified SHA256 sha256:ee1492dc990ed95b74
+Verified SHA256 sha256:76ee9e5ccd0bc15835
+Verified SHA256 sha256:02d75287a8c84be5fb
+Verified SHA256 sha256:18759a18c67f9dda8f
+Verified SHA256 sha256:c9867add3f434b3939
+Verified SHA256 sha256:7fb0f141c3bbfe15e5
+Verified SHA256 sha256:309c3af65c2c8ce20e
+Verified Docker archive ready: C:\Users\mtrop\OneDrive\���������\ChatGPT\Docker\tmp\oci\dotnet-bases.tar (836.2 MiB)

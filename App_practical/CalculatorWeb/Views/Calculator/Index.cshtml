@@ -1,0 +1,35 @@
+@model CalculatorViewModel
+@{
+    ViewData["Title"] = "Калькулятор";
+}
+<section class="calculator-page" aria-labelledby="page-title">
+    <div class="intro">
+    </div>
+    <div class="calculator-card">
+        <div class="card-heading"><h2>Калькулятор</h2><span class="card-number">4 операции</span></div>
+        <form asp-controller="Calculator" asp-action="Index" method="post">
+            <div asp-validation-summary="All" class="validation-summary" role="alert"></div>
+            <div class="number-fields">
+                <div class="field"><label asp-for="FirstNumber"></label><input asp-for="FirstNumber" type="text" inputmode="decimal" maxlength="100" placeholder="Например, 12,5" autocomplete="off" aria-describedby="number-help" /></div>
+                <div class="field"><label asp-for="SecondNumber"></label><input asp-for="SecondNumber" type="text" inputmode="decimal" maxlength="100" placeholder="Например, 4" autocomplete="off" aria-describedby="number-help" /></div>
+            </div>
+            <fieldset class="operation-field"><legend>Операция</legend><div class="operation-options">
+                <label><input asp-for="Operation" id="operation-add" type="radio" value="add" /><span><b>+</b> Сложение</span></label>
+                <label><input asp-for="Operation" id="operation-subtract" type="radio" value="subtract" /><span><b>−</b> Вычитание</span></label>
+                <label><input asp-for="Operation" id="operation-multiply" type="radio" value="multiply" /><span><b>×</b> Умножение</span></label>
+                <label><input asp-for="Operation" id="operation-divide" type="radio" value="divide" /><span><b>÷</b> Деление</span></label>
+            </div></fieldset>
+            <button class="calculate-button" type="submit">Вычислить <span aria-hidden="true">→</span></button>
+            <p id="number-help" class="input-hint">Введите два числа и выберите операцию.</p>
+        </form>
+        @if (Model.Result is not null)
+        {
+            <div class="result-panel" role="status" aria-live="polite"><span class="result-label">РЕЗУЛЬТАТ</span><p class="expression">@Model.Expression =</p><output id="calculation-result">@Model.Result</output></div>
+        }
+        else
+        {
+            <div class="result-panel result-empty"><span class="result-label">РЕЗУЛЬТАТ</span><p>Ваш ответ появится здесь</p></div>
+        }
+        <a class="reset-link" asp-controller="Calculator" asp-action="Index">Очистить поля и начать заново</a>
+    </div>
+</section>

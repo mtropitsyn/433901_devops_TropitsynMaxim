@@ -1,0 +1,14 @@
+PASS: health endpoint
+PASS: stylesheet served
+PASS: HTTP add => 16
+PASS: HTTP subtract => 8
+PASS: HTTP multiply => -12
+PASS: HTTP divide => 3,5
+PASS: HTTP add => 0,3
+PASS: HTTP rejects [10, 0, divide]
+PASS: HTTP rejects [abc, 2, add]
+PASS: HTTP rejects [, , add]
+PASS: HTTP rejects [1, 2, invalid]
+PASS: HTTP rejects [79228162514264337593543950335, 2, multiply]
+PASS: POST without antiforgery token returns 400
+HTTP checks passed: 13

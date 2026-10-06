@@ -1,0 +1,97 @@
+#0 building with "desktop-linux" instance using docker driver
+
+#1 [internal] load build definition from Dockerfile
+#1 transferring dockerfile: 780B 0.0s done
+#1 DONE 0.0s
+
+#2 [internal] load metadata for mcr.microsoft.com/dotnet/aspnet:8.0
+#2 DONE 0.1s
+
+#3 [internal] load metadata for mcr.microsoft.com/dotnet/sdk:8.0
+#3 DONE 0.1s
+
+#4 [internal] load .dockerignore
+#4 transferring context: 175B done
+#4 DONE 0.0s
+
+#5 [build 1/6] FROM mcr.microsoft.com/dotnet/sdk:8.0@sha256:4b5efd5b99842fdf232d116cdc04102bfc54560fd451d55a47999b1a33f03d31
+#5 resolve mcr.microsoft.com/dotnet/sdk:8.0@sha256:4b5efd5b99842fdf232d116cdc04102bfc54560fd451d55a47999b1a33f03d31 0.0s done
+#5 ...
+
+#6 [internal] load build context
+#6 transferring context: 1.25kB 0.0s done
+#6 DONE 0.1s
+
+#7 [final 1/3] FROM mcr.microsoft.com/dotnet/aspnet:8.0@sha256:37b437202a4dc849a23638bfc5d76c091f2418c35300f78e855ddc57b6006412
+#7 resolve mcr.microsoft.com/dotnet/aspnet:8.0@sha256:37b437202a4dc849a23638bfc5d76c091f2418c35300f78e855ddc57b6006412 0.0s done
+#7 DONE 0.2s
+
+#5 [build 1/6] FROM mcr.microsoft.com/dotnet/sdk:8.0@sha256:4b5efd5b99842fdf232d116cdc04102bfc54560fd451d55a47999b1a33f03d31
+#5 DONE 0.5s
+
+#7 [final 1/3] FROM mcr.microsoft.com/dotnet/aspnet:8.0@sha256:37b437202a4dc849a23638bfc5d76c091f2418c35300f78e855ddc57b6006412
+#7 extracting sha256:24f01a7026780378310f7feadb7a8d1c821394e242d4dd4d500d736660462f8d
+#7 extracting sha256:24f01a7026780378310f7feadb7a8d1c821394e242d4dd4d500d736660462f8d 0.4s done
+#7 DONE 0.7s
+
+#7 [final 1/3] FROM mcr.microsoft.com/dotnet/aspnet:8.0@sha256:37b437202a4dc849a23638bfc5d76c091f2418c35300f78e855ddc57b6006412
+#7 extracting sha256:86914810e5fe11bbfa57fe3e72a37de2f5a195babb60b8b070077816e25618fc 0.0s done
+#7 extracting sha256:373d9b5371016253cdc80305031ebbc3daa064dba47391c01d08806b814793a8
+#7 extracting sha256:373d9b5371016253cdc80305031ebbc3daa064dba47391c01d08806b814793a8 0.2s done
+#7 DONE 0.9s
+
+#5 [build 1/6] FROM mcr.microsoft.com/dotnet/sdk:8.0@sha256:4b5efd5b99842fdf232d116cdc04102bfc54560fd451d55a47999b1a33f03d31
+#5 extracting sha256:a087948e62ec6dd58b34cab0bcec9f24abb28391a257a26a304edd196dc7a2d1
+#5 ...
+
+#8 [final 2/3] WORKDIR /app
+#8 DONE 0.4s
+
+#5 [build 1/6] FROM mcr.microsoft.com/dotnet/sdk:8.0@sha256:4b5efd5b99842fdf232d116cdc04102bfc54560fd451d55a47999b1a33f03d31
+#5 extracting sha256:a087948e62ec6dd58b34cab0bcec9f24abb28391a257a26a304edd196dc7a2d1 1.7s done
+#5 extracting sha256:6bd9263145e58c50a985dce62a04403debac75898d8cdcb7ba2d6ca1ce6f87e6
+#5 extracting sha256:6bd9263145e58c50a985dce62a04403debac75898d8cdcb7ba2d6ca1ce6f87e6 5.4s done
+#5 extracting sha256:8c159ed3e9f126153d6839e1276ae938b911ff0d0ed9dcdcc5ec0d4bd35d58e2
+#5 extracting sha256:8c159ed3e9f126153d6839e1276ae938b911ff0d0ed9dcdcc5ec0d4bd35d58e2 0.1s done
+#5 DONE 7.7s
+
+#5 [build 1/6] FROM mcr.microsoft.com/dotnet/sdk:8.0@sha256:4b5efd5b99842fdf232d116cdc04102bfc54560fd451d55a47999b1a33f03d31
+#5 extracting sha256:ff7f3145611e2816119bdfff0df0bd0adbaf922768b0b51d2ab4bdf6b00d4833 0.1s done
+#5 extracting sha256:9f5262119add27429523d51667007ffbd90dc584c9bebbc9edf0a0b417e03e67
+#5 extracting sha256:9f5262119add27429523d51667007ffbd90dc584c9bebbc9edf0a0b417e03e67 0.6s done
+#5 DONE 8.3s
+
+#9 [build 2/6] WORKDIR /src
+#9 DONE 2.8s
+
+#10 [build 3/6] COPY CalculatorWeb/CalculatorWeb.csproj CalculatorWeb/
+#10 DONE 0.1s
+
+#11 [build 4/6] RUN dotnet restore CalculatorWeb/CalculatorWeb.csproj
+#11 2.332   Determining projects to restore...
+#11 3.486   Restored /src/CalculatorWeb/CalculatorWeb.csproj (in 176 ms).
+#11 DONE 3.6s
+
+#12 [build 5/6] COPY CalculatorWeb/ CalculatorWeb/
+#12 DONE 0.2s
+
+#13 [build 6/6] RUN dotnet publish CalculatorWeb/CalculatorWeb.csproj -c Release -o /app/publish --no-restore /p:UseAppHost=false
+#13 11.44   CalculatorWeb -> /src/CalculatorWeb/bin/Release/net8.0/CalculatorWeb.dll
+#13 11.54   CalculatorWeb -> /app/publish/
+#13 DONE 11.7s
+
+#14 [final 3/3] COPY --from=build /app/publish .
+#14 DONE 0.1s
+
+#15 exporting to image
+#15 exporting layers
+#15 exporting layers 0.4s done
+#15 exporting manifest sha256:d44e37a67619f84de393581a5f06aa27afe57e514e43e1bcbed9d18adb50b891 0.0s done
+#15 exporting config sha256:fb193386ffeb602ccc4d6ad11c65afddbe739e8f29bda36a9b5698fddb5ad1d1 0.0s done
+#15 exporting attestation manifest sha256:2a9a0274f7ff6278de27e01d6090786fb6e161ea788044a16b79078f53a4b7be
+#15 exporting attestation manifest sha256:2a9a0274f7ff6278de27e01d6090786fb6e161ea788044a16b79078f53a4b7be 0.1s done
+#15 exporting manifest list sha256:03112ea284e3ccb418002b291f0d186ab85ffb27ca34ec27ae9d8cb3852c321f 0.0s done
+#15 naming to docker.io/library/16-calculator:latest
+#15 naming to docker.io/library/16-calculator:latest done
+#15 unpacking to docker.io/library/16-calculator:latest 0.1s done
+#15 DONE 0.8s

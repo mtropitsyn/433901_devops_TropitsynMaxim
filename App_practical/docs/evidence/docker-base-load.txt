@@ -1,0 +1,2 @@
+Loaded image: mcr.microsoft.com/dotnet/sdk:8.0
+Loaded image: mcr.microsoft.com/dotnet/aspnet:8.0

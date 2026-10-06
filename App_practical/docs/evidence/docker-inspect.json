@@ -1,0 +1,221 @@
+[
+    {
+        "Id": "ee52946f7e6d1d6656e986953c09796654ce1e48edc027e6f6b5acae4ac0f314",
+        "Created": "2026-10-06T06:01:53.599438766Z",
+        "Path": "dotnet",
+        "Args": [
+            "CalculatorWeb.dll"
+        ],
+        "State": {
+            "Status": "running",
+            "Running": true,
+            "Paused": false,
+            "Restarting": false,
+            "OOMKilled": false,
+            "Dead": false,
+            "Pid": 398,
+            "ExitCode": 0,
+            "Error": "",
+            "StartedAt": "2026-10-06T06:01:54.160255566Z",
+            "FinishedAt": "0001-01-01T00:00:00Z"
+        },
+        "Image": "sha256:03112ea284e3ccb418002b291f0d186ab85ffb27ca34ec27ae9d8cb3852c321f",
+        "ResolvConfPath": "/var/lib/docker/containers/ee52946f7e6d1d6656e986953c09796654ce1e48edc027e6f6b5acae4ac0f314/resolv.conf",
+        "HostnamePath": "/var/lib/docker/containers/ee52946f7e6d1d6656e986953c09796654ce1e48edc027e6f6b5acae4ac0f314/hostname",
+        "HostsPath": "/var/lib/docker/containers/ee52946f7e6d1d6656e986953c09796654ce1e48edc027e6f6b5acae4ac0f314/hosts",
+        "LogPath": "",
+        "Name": "/calculator-16",
+        "RestartCount": 0,
+        "Driver": "overlayfs",
+        "Platform": "linux",
+        "MountLabel": "",
+        "ProcessLabel": "",
+        "AppArmorProfile": "",
+        "ExecIDs": null,
+        "HostConfig": {
+            "Binds": null,
+            "ContainerIDFile": "",
+            "LogConfig": {
+                "Type": "local",
+                "Config": {}
+            },
+            "NetworkMode": "bridge",
+            "PortBindings": {
+                "5016/tcp": [
+                    {
+                        "HostIp": "",
+                        "HostPort": "5016"
+                    }
+                ]
+            },
+            "RestartPolicy": {
+                "Name": "no",
+                "MaximumRetryCount": 0
+            },
+            "AutoRemove": false,
+            "VolumeDriver": "",
+            "VolumesFrom": null,
+            "ConsoleSize": [
+                0,
+                0
+            ],
+            "CapAdd": null,
+            "CapDrop": null,
+            "CgroupnsMode": "private",
+            "Dns": null,
+            "DnsOptions": [],
+            "DnsSearch": [],
+            "ExtraHosts": null,
+            "GroupAdd": null,
+            "IpcMode": "private",
+            "Cgroup": "",
+            "Links": null,
+            "OomScoreAdj": 0,
+            "PidMode": "",
+            "Privileged": false,
+            "PublishAllPorts": false,
+            "ReadonlyRootfs": false,
+            "SecurityOpt": null,
+            "UTSMode": "",
+            "UsernsMode": "",
+            "ShmSize": 67108864,
+            "Runtime": "runc",
+            "Isolation": "",
+            "CpuShares": 0,
+            "Memory": 0,
+            "NanoCpus": 0,
+            "CgroupParent": "",
+            "BlkioWeight": 0,
+            "BlkioWeightDevice": [],
+            "BlkioDeviceReadBps": [],
+            "BlkioDeviceWriteBps": [],
+            "BlkioDeviceReadIOps": [],
+            "BlkioDeviceWriteIOps": [],
+            "CpuPeriod": 0,
+            "CpuQuota": 0,
+            "CpuRealtimePeriod": 0,
+            "CpuRealtimeRuntime": 0,
+            "CpusetCpus": "",
+            "CpusetMems": "",
+            "Devices": [],
+            "DeviceCgroupRules": null,
+            "DeviceRequests": null,
+            "MemoryReservation": 0,
+            "MemorySwap": 0,
+            "MemorySwappiness": null,
+            "OomKillDisable": null,
+            "PidsLimit": null,
+            "Ulimits": null,
+            "CpuCount": 0,
+            "CpuPercent": 0,
+            "IOMaximumIOps": 0,
+            "IOMaximumBandwidth": 0,
+            "MaskedPaths": [
+                "/proc/acpi",
+                "/proc/asound",
+                "/proc/interrupts",
+                "/proc/kcore",
+                "/proc/keys",
+                "/proc/latency_stats",
+                "/proc/sched_debug",
+                "/proc/scsi",
+                "/proc/timer_list",
+                "/proc/timer_stats",
+                "/sys/devices/virtual/powercap",
+                "/sys/firmware"
+            ],
+            "ReadonlyPaths": [
+                "/proc/bus",
+                "/proc/fs",
+                "/proc/irq",
+                "/proc/sys",
+                "/proc/sysrq-trigger"
+            ]
+        },
+        "Storage": {
+            "RootFS": {
+                "Snapshot": {
+                    "Name": "overlayfs"
+                }
+            }
+        },
+        "Mounts": [],
+        "Config": {
+            "Hostname": "ee52946f7e6d",
+            "Domainname": "",
+            "User": "1654",
+            "AttachStdin": false,
+            "AttachStdout": false,
+            "AttachStderr": false,
+            "ExposedPorts": {
+                "5016/tcp": {}
+            },
+            "Tty": false,
+            "OpenStdin": false,
+            "StdinOnce": false,
+            "Env": [
+                "PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin",
+                "APP_UID=1654",
+                "ASPNETCORE_HTTP_PORTS=5016",
+                "DOTNET_RUNNING_IN_CONTAINER=true",
+                "DOTNET_VERSION=8.0.31",
+                "ASPNET_VERSION=8.0.31",
+                "Kestrel__Endpoints__Http__Url=http://0.0.0.0:5016",
+                "ASPNETCORE_ENVIRONMENT=Production"
+            ],
+            "Cmd": null,
+            "Image": "16-calculator:latest",
+            "Volumes": null,
+            "WorkingDir": "/app",
+            "Entrypoint": [
+                "dotnet",
+                "CalculatorWeb.dll"
+            ],
+            "Labels": {}
+        },
+        "NetworkSettings": {
+            "SandboxID": "2f0ef7e49fdc67983f2829a946c9ff3c010a8a6045ea3a4911ef2e19b5ef40ea",
+            "SandboxKey": "/var/run/docker/netns/2f0ef7e49fdc",
+            "Ports": {
+                "5016/tcp": [
+                    {
+                        "HostIp": "0.0.0.0",
+                        "HostPort": "5016"
+                    },
+                    {
+                        "HostIp": "::",
+                        "HostPort": "5016"
+                    }
+                ]
+            },
+            "Networks": {
+                "bridge": {
+                    "IPAMConfig": null,
+                    "Links": null,
+                    "Aliases": null,
+                    "DriverOpts": null,
+                    "GwPriority": 0,
+                    "NetworkID": "b19266962ebbead319290a3b9a89bc3bd4b132748502935e1f39db5f59730b5d",
+                    "EndpointID": "1ccb657144d8d84933faa67afcad7292c7e10488411b6a57fa98295a6a7996bb",
+                    "Gateway": "172.17.0.1",
+                    "IPAddress": "172.17.0.2",
+                    "MacAddress": "c2:2e:ca:3f:73:65",
+                    "IPPrefixLen": 16,
+                    "IPv6Gateway": "",
+                    "GlobalIPv6Address": "",
+                    "GlobalIPv6PrefixLen": 0,
+                    "DNSNames": null
+                }
+            }
+        },
+        "ImageManifestDescriptor": {
+            "mediaType": "application/vnd.oci.image.manifest.v1+json",
+            "digest": "sha256:d44e37a67619f84de393581a5f06aa27afe57e514e43e1bcbed9d18adb50b891",
+            "size": 1787,
+            "platform": {
+                "architecture": "amd64",
+                "os": "linux"
+            }
+        }
+    }
+]

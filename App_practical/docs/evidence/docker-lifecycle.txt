@@ -1,0 +1,12 @@
+docker stop calculator-16
+calculator-16
+docker inspect --format {{.State.Status}} calculator-16
+exited
+HTTP GET http://localhost:5016/health after stop: connection failed
+Сделана попытка доступа к сокету методом, запрещенным правами доступа. (localhost:5016)
+docker start calculator-16
+calculator-16
+HTTP GET http://localhost:5016/health after start: 200 OK
+Final docker stop calculator-16
+calculator-16
+Final state: exited; exit code: 0

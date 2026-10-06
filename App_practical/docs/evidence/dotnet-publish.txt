@@ -1,0 +1,2 @@
+  CalculatorWeb -> C:\Users\mtrop\OneDrive\Документы\ChatGPT\Docker\CalculatorWeb\bin\Release\net8.0\CalculatorWeb.dll
+  CalculatorWeb -> C:\Users\mtrop\OneDrive\Документы\ChatGPT\Docker\tmp\publish\

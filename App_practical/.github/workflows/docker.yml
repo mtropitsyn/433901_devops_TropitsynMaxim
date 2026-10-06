@@ -1,0 +1,52 @@
+name: Build and verify calculator container
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  docker:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: '8.0.x'
+      - name: Build and check calculations
+        run: |
+          dotnet build CalculatorDocker.sln -c Release
+          dotnet run --project CalculatorWeb.Checks -c Release --no-build
+      - name: Build Docker image
+        run: docker build --build-arg APP_PORT=5016 -t calculator:ci .
+      - name: Run and verify application
+        shell: pwsh
+        run: |
+          docker run -d -p 5016:5016 --name calculator-ci calculator:ci
+          if ($LASTEXITCODE -ne 0) { throw 'docker run failed' }
+          for ($i=0; $i -lt 30; $i++) {
+            try { Invoke-WebRequest http://localhost:5016/health | Out-Null; break } catch { Start-Sleep -Seconds 1 }
+          }
+          ./scripts/Test-Web.ps1 -BaseUrl http://localhost:5016
+          docker stop calculator-ci
+          if ($LASTEXITCODE -ne 0) { throw 'docker stop failed' }
+          $state = docker inspect --format '{{.State.Status}}' calculator-ci
+          if ($state.Trim() -ne 'exited') { throw 'Container is still running' }
+          $reachable = $false
+          try { Invoke-WebRequest http://localhost:5016/health -TimeoutSec 2 | Out-Null; $reachable=$true } catch { }
+          if ($reachable) { throw 'Application is accessible after stop' }
+          docker start calculator-ci
+          if ($LASTEXITCODE -ne 0) { throw 'docker start failed' }
+          for ($i=0; $i -lt 30; $i++) {
+            try { Invoke-WebRequest http://localhost:5016/health | Out-Null; break } catch { Start-Sleep -Seconds 1 }
+          }
+          ./scripts/Test-Web.ps1 -BaseUrl http://localhost:5016
+          docker stop calculator-ci
+          if ($LASTEXITCODE -ne 0) { throw 'Final docker stop failed' }
+      - name: Container logs and state
+        if: always()
+        run: |
+          docker logs calculator-ci || true
+          docker ps -a
+

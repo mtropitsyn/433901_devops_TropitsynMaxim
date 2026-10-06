@@ -1,0 +1,15 @@
+.git
+.github
+.vs
+.idea
+**/bin
+**/obj
+**/*.user
+**/*.suo
+CalculatorWeb.Checks
+docs
+output
+tmp
+scripts
+methodology-page.html
+README.md

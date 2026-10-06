@@ -1,0 +1,4 @@
+IMAGE                                 ID             DISK USAGE   CONTENT SIZE   EXTRA
+16-calculator:latest                  03112ea284e3        452MB          221MB        
+mcr.microsoft.com/dotnet/aspnet:8.0   37b437202a4d        451MB          221MB        
+mcr.microsoft.com/dotnet/sdk:8.0      4b5efd5b9984       1.78GB          877MB        
