@@ -1,0 +1,74 @@
+ Image 16-calculator:latest Building 
+#1 [internal] load local bake definitions
+#1 reading from stdin 635B 0.0s done
+#1 DONE 0.0s
+
+#2 [internal] load build definition from Dockerfile
+#2 transferring dockerfile: 780B 0.0s done
+#2 DONE 0.0s
+
+#3 [internal] load metadata for mcr.microsoft.com/dotnet/aspnet:8.0
+#3 ...
+
+#4 [internal] load metadata for mcr.microsoft.com/dotnet/sdk:8.0
+#4 DONE 0.2s
+
+#3 [internal] load metadata for mcr.microsoft.com/dotnet/aspnet:8.0
+#3 DONE 0.2s
+
+#5 [internal] load .dockerignore
+#5 transferring context: 209B done
+#5 DONE 0.0s
+
+#6 [build 1/6] FROM mcr.microsoft.com/dotnet/sdk:8.0@sha256:4b5efd5b99842fdf232d116cdc04102bfc54560fd451d55a47999b1a33f03d31
+#6 resolve mcr.microsoft.com/dotnet/sdk:8.0@sha256:4b5efd5b99842fdf232d116cdc04102bfc54560fd451d55a47999b1a33f03d31 0.0s done
+#6 DONE 0.0s
+
+#7 [final 1/3] FROM mcr.microsoft.com/dotnet/aspnet:8.0@sha256:37b437202a4dc849a23638bfc5d76c091f2418c35300f78e855ddc57b6006412
+#7 resolve mcr.microsoft.com/dotnet/aspnet:8.0@sha256:37b437202a4dc849a23638bfc5d76c091f2418c35300f78e855ddc57b6006412 0.0s done
+#7 DONE 0.0s
+
+#8 [internal] load build context
+#8 transferring context: 11.99kB 0.0s done
+#8 DONE 0.0s
+
+#9 [build 2/6] WORKDIR /src
+#9 CACHED
+
+#10 [build 3/6] COPY CalculatorWeb/CalculatorWeb.csproj CalculatorWeb/
+#10 DONE 0.1s
+
+#11 [build 4/6] RUN dotnet restore CalculatorWeb/CalculatorWeb.csproj
+#11 1.325   Determining projects to restore...
+#11 14.69   Restored /src/CalculatorWeb/CalculatorWeb.csproj (in 12.98 sec).
+#11 DONE 14.8s
+
+#12 [build 5/6] COPY CalculatorWeb/ CalculatorWeb/
+#12 DONE 0.1s
+
+#13 [build 6/6] RUN dotnet publish CalculatorWeb/CalculatorWeb.csproj -c Release -o /app/publish --no-restore /p:UseAppHost=false
+#13 5.423   CalculatorWeb -> /src/CalculatorWeb/bin/Release/net8.0/CalculatorWeb.dll
+#13 5.488   CalculatorWeb -> /app/publish/
+#13 DONE 5.6s
+
+#14 [final 2/3] WORKDIR /app
+#14 CACHED
+
+#15 [final 3/3] COPY --from=build /app/publish .
+#15 DONE 0.1s
+
+#16 exporting to image
+#16 exporting layers
+#16 exporting layers 0.2s done
+#16 exporting manifest sha256:bb3adfae3e449569f713301e38440d0e0902779b13b5602505e8aa3d676438b5 0.0s done
+#16 exporting config sha256:09ba37fb010e9b47c1b0635c0d640fd83bc3e3e584d9165be6966e16787c0ca0 0.0s done
+#16 exporting attestation manifest sha256:0af68f4d8f96042b94b97cedc176224fd6ecb2a10388435e873b6f5b7d329574
+#16 exporting attestation manifest sha256:0af68f4d8f96042b94b97cedc176224fd6ecb2a10388435e873b6f5b7d329574 0.0s done
+#16 exporting manifest list sha256:5302e500a59c269278c446780d1299aded1f9b6e5fd4b8d6353bf1483491b6cf 0.0s done
+#16 naming to docker.io/library/16-calculator:latest done
+#16 unpacking to docker.io/library/16-calculator:latest 0.1s done
+#16 DONE 0.5s
+
+#17 resolving provenance for metadata file
+#17 DONE 0.0s
+ Image 16-calculator:latest Built 

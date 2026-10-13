@@ -1,7 +1,9 @@
 using CalculatorWeb.Controllers;
+using CalculatorWeb.Data;
 using CalculatorWeb.Models;
 using CalculatorWeb.Services;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging.Abstractions;
 
 var calculator = new CalculatorService();
 var passed = 0;
@@ -33,15 +35,64 @@ Throws<OverflowException>(() => calculator.Calculate(decimal.MaxValue, 2, "multi
 Throws<ArgumentException>(() => calculator.Calculate(2, 3, "invalid"), "unknown operation");
 Check(CalculatorService.Format(3.5m) == "3,5", "Russian result format");
 
-var controller = new CalculatorController(calculator);
+var saved = new RecordingCalculationRepository();
+CalculatorController CreateController(ICalculationRepository repository) =>
+    new(calculator, repository, NullLogger<CalculatorController>.Instance);
+var controller = CreateController(saved);
 var success = new CalculatorViewModel { FirstNumber = "12,5", SecondNumber = "4", Operation = "multiply" };
-Check(controller.Index(success) is ViewResult && success.Result == "50", "controller result");
-controller = new CalculatorController(calculator);
+Check(await controller.Index(success) is ViewResult && success.Result == "50", "controller result");
+Check(saved.Records.Count == 1 && saved.Records[0] == new CalculationRecord(12.5m, 4, "multiply", 50),
+    "successful calculation saves both operands, operation and result exactly once");
+controller = CreateController(saved);
 var zero = new CalculatorViewModel { FirstNumber = "10", SecondNumber = "0", Operation = "divide" };
-controller.Index(zero);
+await controller.Index(zero);
 Check(!controller.ModelState.IsValid && zero.Result is null, "controller handles division by zero");
-controller = new CalculatorController(calculator);
+Check(saved.Records.Count == 1, "division by zero is not saved");
+controller = CreateController(saved);
 var malformed = new CalculatorViewModel { FirstNumber = "abc", SecondNumber = "4", Operation = "add" };
-controller.Index(malformed);
+await controller.Index(malformed);
 Check(!controller.ModelState.IsValid && malformed.Result is null, "controller handles malformed input");
+Check(saved.Records.Count == 1, "malformed input is not saved");
+controller = CreateController(saved);
+var overflow = new CalculatorViewModel { FirstNumber = decimal.MaxValue.ToString(), SecondNumber = "2", Operation = "multiply" };
+await controller.Index(overflow);
+Check(!controller.ModelState.IsValid && overflow.Result is null && saved.Records.Count == 1,
+    "overflow does not create a history entry");
+controller = CreateController(saved);
+await controller.Index(new CalculatorViewModel { FirstNumber = "1", SecondNumber = "2", Operation = "invalid" });
+Check(!controller.ModelState.IsValid && saved.Records.Count == 1, "invalid operation is not saved");
+var failing = new RecordingCalculationRepository { Failure = new CalculationStorageException("Unavailable") };
+controller = CreateController(failing);
+var failed = new CalculatorViewModel { FirstNumber = "1", SecondNumber = "2", Operation = "add" };
+Check(await controller.Index(failed) is ViewResult && !controller.ModelState.IsValid,
+    "database failure is shown as a form error");
+Check(failed.Result is null && failed.Expression is null && failing.Records.Count == 0,
+    "unsaved result is not presented as successful");
+controller = CreateController(saved);
+Check(controller.Index() is ViewResult && saved.Records.Count == 1, "GET does not insert calculations");
+using var cancelled = new CancellationTokenSource();
+cancelled.Cancel();
+try
+{
+    await controller.Index(new CalculatorViewModel { FirstNumber = "1", SecondNumber = "2", Operation = "add" }, cancelled.Token);
+    throw new Exception("FAIL: cancellation was ignored");
+}
+catch (OperationCanceledException)
+{
+    Check(saved.Records.Count == 1, "request cancellation reaches database persistence");
+}
 Console.WriteLine($"Checks passed: {passed}");
+
+sealed class RecordingCalculationRepository : ICalculationRepository
+{
+    public List<CalculationRecord> Records { get; } = [];
+    public Exception? Failure { get; init; }
+
+    public Task SaveAsync(CalculationRecord calculation, CancellationToken cancellationToken = default)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+        if (Failure is not null) return Task.FromException(Failure);
+        Records.Add(calculation);
+        return Task.CompletedTask;
+    }
+}

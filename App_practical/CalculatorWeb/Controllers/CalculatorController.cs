@@ -1,17 +1,21 @@
+using CalculatorWeb.Data;
 using CalculatorWeb.Models;
 using CalculatorWeb.Services;
 using Microsoft.AspNetCore.Mvc;
 
 namespace CalculatorWeb.Controllers;
 
-public sealed class CalculatorController(CalculatorService calculator) : Controller
+public sealed class CalculatorController(
+    CalculatorService calculator,
+    ICalculationRepository calculations,
+    ILogger<CalculatorController> logger) : Controller
 {
     [HttpGet]
     public IActionResult Index() => View(new CalculatorViewModel());
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public IActionResult Index(CalculatorViewModel model)
+    public async Task<IActionResult> Index(CalculatorViewModel model, CancellationToken cancellationToken = default)
     {
         var firstValid = CalculatorService.TryParseNumber(model.FirstNumber, out var first);
         var secondValid = CalculatorService.TryParseNumber(model.SecondNumber, out var second);
@@ -28,7 +32,9 @@ public sealed class CalculatorController(CalculatorService calculator) : Control
 
         try
         {
-            model.Result = CalculatorService.Format(calculator.Calculate(first, second, model.Operation));
+            var result = calculator.Calculate(first, second, model.Operation);
+            await calculations.SaveAsync(new CalculationRecord(first, second, model.Operation, result), cancellationToken);
+            model.Result = CalculatorService.Format(result);
             model.Expression = $"{CalculatorService.Format(first)} {CalculatorService.Symbol(model.Operation)} {CalculatorService.Format(second)}";
         }
         catch (DivideByZeroException)
@@ -38,6 +44,11 @@ public sealed class CalculatorController(CalculatorService calculator) : Control
         catch (OverflowException)
         {
             ModelState.AddModelError("", "Результат выходит за допустимый диапазон decimal. Используйте меньшие числа.");
+        }
+        catch (CalculationStorageException exception)
+        {
+            logger.LogError(exception, "Could not save a calculation to MariaDB.");
+            ModelState.AddModelError("", "Не удалось сохранить расчёт в базе данных. Попробуйте ещё раз позже.");
         }
 
         return View(model);

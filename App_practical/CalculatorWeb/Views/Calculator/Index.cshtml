@@ -6,7 +6,7 @@
     <div class="intro">
     </div>
     <div class="calculator-card">
-        <div class="card-heading"><h2>Калькулятор Профессиональный</h2><span class="card-number">4 операции</span></div>
+        <div class="card-heading"><h2>Калькулятор</h2><span class="card-number">4 операции</span></div>
         <form asp-controller="Calculator" asp-action="Index" method="post">
             <div asp-validation-summary="All" class="validation-summary" role="alert"></div>
             <div class="number-fields">
@@ -24,7 +24,7 @@
         </form>
         @if (Model.Result is not null)
         {
-            <div class="result-panel" role="status" aria-live="polite"><span class="result-label">РЕЗУЛЬТАТ</span><p class="expression">@Model.Expression =</p><output id="calculation-result">@Model.Result</output></div>
+            <div class="result-panel" role="status" aria-live="polite"><span class="result-label">РЕЗУЛЬТАТ</span><p class="expression">@Model.Expression =</p><output id="calculation-result">@Model.Result</output><p class="input-hint">Расчёт сохранён.</p></div>
         }
         else
         {

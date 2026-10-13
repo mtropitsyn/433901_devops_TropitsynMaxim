@@ -1,0 +1,3 @@
+  Определение проектов для восстановления...
+  Восстановлен C:\Users\mtrop\OneDrive\Документы\ChatGPT\Docker\CalculatorWeb\CalculatorWeb.csproj (за 9,14 с).
+  Восстановлен C:\Users\mtrop\OneDrive\Документы\ChatGPT\Docker\CalculatorWeb.Checks\CalculatorWeb.Checks.csproj (за 9,14 с).

@@ -1,0 +1,33 @@
+PASS: addition
+PASS: subtraction
+PASS: negative multiplication
+PASS: fractional division
+PASS: decimal precision
+PASS: comma input
+PASS: dot input
+PASS: reject invalid number []
+PASS: reject invalid number [abc]
+PASS: reject invalid number [1,2.3]
+PASS: reject invalid number [1 000]
+PASS: reject invalid number [NaN]
+PASS: reject invalid number [1e3]
+PASS: reject invalid number [79228162514264337593543950336]
+PASS: division by zero
+PASS: addition overflow
+PASS: subtraction overflow
+PASS: multiplication overflow
+PASS: unknown operation
+PASS: Russian result format
+PASS: controller result
+PASS: successful calculation saves both operands, operation and result exactly once
+PASS: controller handles division by zero
+PASS: division by zero is not saved
+PASS: controller handles malformed input
+PASS: malformed input is not saved
+PASS: overflow does not create a history entry
+PASS: invalid operation is not saved
+PASS: database failure is shown as a form error
+PASS: unsaved result is not presented as successful
+PASS: GET does not insert calculations
+PASS: request cancellation reaches database persistence
+Checks passed: 32

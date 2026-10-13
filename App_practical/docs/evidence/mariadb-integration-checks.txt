@@ -1,0 +1,37 @@
+PASS: health endpoint
+PASS: stylesheet served
+PASS: HTTP add => 16
+PASS: HTTP subtract => 8
+PASS: HTTP multiply => -12
+PASS: HTTP divide => 3,5
+PASS: HTTP add => 0,3
+PASS: HTTP rejects [10, 0, divide]
+PASS: HTTP rejects [abc, 2, add]
+PASS: HTTP rejects [, , add]
+PASS: HTTP rejects [1, 2, invalid]
+PASS: HTTP rejects [79228162514264337593543950335, 2, multiply]
+PASS: POST without antiforgery token returns 400
+HTTP checks passed: 13
+PASS: five successful HTTP calculations create exactly five records; invalid requests create none
+PASS: MariaDB stores operands, operation and result for add
+PASS: MariaDB stores operands, operation and result for subtract
+PASS: MariaDB stores operands, operation and result for multiply
+PASS: MariaDB stores operands, operation and result for divide
+PASS: MariaDB stores operands, operation and result for add
+PASS: MariaDB preserves decimal precision [79228162514264337593543950335 add 0]
+PASS: MariaDB preserves decimal precision [0.0000000000000000000000000001 multiply 1]
+PASS: MariaDB preserves decimal precision [1 divide 3]
+PASS: MariaDB preserves decimal precision [-12.5 divide -2]
+PASS: all successful calculations are stored once
+ Container calculator-lab-db-1 Stopping 
+ Container calculator-lab-db-1 Stopped 
+PASS: database outage produces a visible error instead of an unsaved result
+ Container calculator-lab-db-1 Recreate 
+ Container calculator-lab-db-1 Recreated 
+ Container calculator-lab-db-1 Starting 
+ Container calculator-lab-db-1 Started 
+ Container calculator-lab-db-1 Waiting 
+ Container calculator-lab-db-1 Healthy 
+PASS: history survives MariaDB container recreation; failed save creates no record
+PASS: application reconnects and saves calculations after MariaDB restart
+Database checks passed: 14

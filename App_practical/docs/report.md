@@ -14,13 +14,13 @@ ASP.NET Core MVC
 Преподаватель Лавров В. В.
 
 Екатеринбург 2026
-Дата подготовки 6 октября 2026 года
+Дата подготовки 13 октября 2026 года
 
 ## 1 Цель работы и состояние выполнения
 
 Цель работы - разработать веб-калькулятор на ASP.NET Core MVC, подготовить Dockerfile, разместить исходный код на GitHub и проверить сборку, запуск, остановку и повторный запуск контейнера.
 
-Приложение прошло локальную сборку и проверку вычислений и HTTP-формы. На рабочем компьютере установлены WSL 3.0.1 и Docker Desktop 4.94.0. Образ 16-calculator:latest собран, контейнер calculator-16 запущен на порту 5016. Проверены HTTP-форма, остановка, недоступность после остановки и повторный запуск. Публикация исходного кода на GitHub выполняется студентом самостоятельно.
+Приложение дополнено MariaDB: после каждого успешного расчета сохраняются два операнда, операция и результат. Образ 16-calculator:latest собран, приложение и MariaDB запущены через Docker Compose. Проверены HTTP-форма, запись в базу, точность decimal, обработка недоступности базы, сохранность истории после пересоздания ее контейнера, остановка и повторный запуск приложения. Публикация исходного кода на GitHub выполняется студентом самостоятельно.
 
 | Этап | Результат на дату подготовки |
 | --- | --- |
@@ -49,12 +49,12 @@ ASP.NET Core MVC
 
 ```
 dotnet build CalculatorDocker.sln -c Release
-dotnet run --project CalculatorWeb
+./scripts/Start-Local.ps1
 dotnet run --project CalculatorWeb.Checks -c Release
 ./scripts/Test-Web.ps1 -BaseUrl http://localhost:5016
 ```
 
-Сборка завершилась без ошибок и предупреждений. Пройдено 23 проверки арифметики и контроллера, а также 13 проверок HTTP-интерфейса. Команда dotnet publish с параметром UseAppHost=false успешно создала опубликованную DLL и необходимые файлы. Текстовые журналы сохранены в docs/evidence.
+Сборка завершилась без ошибок и предупреждений. Пройдено 32 проверки арифметики и контроллера, а также 13 проверок HTTP-интерфейса. Команда dotnet publish с параметром UseAppHost=false успешно создала опубликованную DLL и необходимые файлы. Текстовые журналы сохранены в docs/evidence.
 
 | Проверка | Ввод | Результат |
 | --- | --- | --- |
@@ -77,7 +77,7 @@ dotnet run --project CalculatorWeb.Checks -c Release
 
 ## 3 Проверка веб интерфейса
 
-Приложение в контейнере calculator-16 открыто в браузере на порту 5016. Введены числа 12,5 и 4, выбрано умножение и нажата кнопка вычисления. Получен результат 50.
+При первичной проверке интерфейса 6 октября приложение открыто в браузере на порту 5016. Введены числа 12,5 и 4, выбрано умножение и нажата кнопка вычисления. Получен результат 50. Скриншоты разделов 3 и 4 относятся к этой проверке; проверка новой версии с MariaDB описана в разделе 9.
 
 ![Рисунок 1 - Калькулятор на localhost:5016 и результат умножения в Docker](screenshots/docker-calculator-result.jpg)
 
@@ -142,19 +142,20 @@ cd docker-calculator
 docker version
 docker build -t 16-calculator:latest .
 docker images -a
-docker run -d -p 5016:5016 --name calculator-16 16-calculator:latest
-docker ps
-docker logs calculator-16
+./scripts/Initialize-Database.ps1
+docker compose up -d --build --wait
+docker compose ps
+docker compose logs web
 ```
 
-Имя образа начинается с номера студента в журнале. Параметр -d задает фоновый запуск, -p публикует порт 5016 хоста и связывает его с портом 5016 контейнера. После запуска нужно открыть http://localhost:5016 или адрес удаленного сервера с этим портом.
+Имя образа начинается с номера студента в журнале. Параметр -d задает фоновый запуск. В compose.yaml публикуется порт 5016 хоста и контейнера приложения. MariaDB запускается отдельно, приложение подключается к db:3306. После запуска нужно открыть http://localhost:5016. Пароли создаются в локальном .env; он исключен из Git и контекста Docker-сборки.
 
 Образ успешно собран из Dockerfile. Контейнер запущен и обслуживает страницу калькулятора и endpoint /health на порту 5016. Все 13 HTTP-проверок пройдены внутри контейнера. Журналы сборки, версии Docker, списка образов и контейнеров сохранены в docs/evidence.
 
 Идентификатор собранного образа:
 
 ```
-sha256:03112ea284e3ccb418002b291f0d186ab85ffb27ca34ec27ae9d8cb3852c321f
+sha256:95aa41bcff17a29eb8e9acdb7238b5981313819eb16e94fd85f772650b402bee
 ```
 
 Пользователь контейнера 1654. Окружение Production. Опубликованный порт 5016.
@@ -162,22 +163,21 @@ sha256:03112ea284e3ccb418002b291f0d186ab85ffb27ca34ec27ae9d8cb3852c321f
 ## 8 Остановка и повторный запуск
 
 ```
-docker stop calculator-16
-docker ps -a
-docker inspect --format '{{.State.Status}}' calculator-16
-docker start calculator-16
-docker ps
-docker stop calculator-16
+docker compose stop web
+docker compose ps -a
+docker compose start web
+docker compose ps
+docker compose stop
 ```
 
-После docker stop ожидается состояние exited. При обновлении страницы приложение должно быть недоступно. После docker start тот же контейнер должен снова обслуживать запросы. Остановка сохраняет контейнер и его имя для повторного запуска.
+После остановки ожидается состояние exited и недоступность приложения. После повторного запуска контейнер снова обслуживает запросы. Docker Compose управляет приложением и MariaDB; история остается в постоянном томе базы.
 
-При фактической проверке после остановки получено состояние exited, HTTP-запрос не установил соединение. После docker start endpoint /health снова вернул OK. По завершении проверки контейнер оставлен остановленным. Результаты зафиксированы в docker-lifecycle.txt и docker-verification.json.
+При фактической проверке после остановки получено состояние exited, HTTP-запрос не установил соединение. После повторного запуска приложение снова вернуло OK. После демонстрации приложение и база снова запущены для использования. Результаты зафиксированы в mariadb-demo.txt и mariadb-verification.json.
 
 | Проверка | Фактический результат |
 | --- | --- |
 
-| Контейнер | ee52946f7e6d / calculator-16 |
+| Контейнер | 803ddd1c51b9 / calculator-lab-web-1 |
 
 | Публикация порта | 0.0.0.0:5016 -> 5016/tcp |
 
@@ -187,7 +187,7 @@ docker stop calculator-16
 
 | После docker start | /health вернул 200 OK |
 
-| Завершение демонстрации | Контейнер остановлен; код завершения 0 |
+| Завершение демонстрации | Оба контейнера запущены для использования |
 
 В scripts/Demo-Docker.ps1 подготовлен сценарий, который собирает образ, запускает контейнер, выполняет 13 HTTP-проверок, останавливает приложение, проверяет его недоступность, повторно запускает и снова останавливает контейнер. Существующие контейнеры не удаляются.
 
@@ -195,7 +195,49 @@ docker stop calculator-16
 ./scripts/Demo-Docker.ps1 -StudentNumber 16
 ```
 
-## 9 Материалы для завершения отчета
+## 9 Добавление MariaDB
+
+Добавлена MariaDB 11.4 и библиотека MySqlConnector 2.6.2. В таблице calculator.calculations хранятся first_operand, second_operand, operation и result, а также номер записи id и время created_at в UTC. Значения operation: add, subtract, multiply, divide. Числа хранятся как DECIMAL(57,28), сохраняющий диапазон и точность типа decimal приложения.
+
+```
+-- 29 integer digits + 28 fractional digits cover every System.Decimal value.
+CREATE TABLE IF NOT EXISTS calculations (
+    id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    first_operand DECIMAL(57,28) NOT NULL,
+    second_operand DECIMAL(57,28) NOT NULL,
+    operation ENUM('add', 'subtract', 'multiply', 'divide') NOT NULL,
+    result DECIMAL(57,28) NOT NULL,
+    created_at DATETIME(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+```
+
+Контроллер ожидает параметризованный INSERT перед показом результата. При успешной записи появляется сообщение «Расчет сохранен». При недоступности базы показывается ошибка сохранения; результат не выдается как успешно сохраненный. Некорректные запросы, деление на ноль и переполнение не создают запись.
+
+Приложение подключается к db:3306; локальная разработка использует localhost:3307. Пользователь базы - calculator, пароль задается в .env. SQL-файл инициализирует таблицу. Постоянный том сохраняет историю при пересоздании базы.
+
+```
+./scripts/Show-Calculations.ps1 -Limit 20
+./scripts/Test-Database.ps1 -VerifyDatabaseRestart
+```
+
+13 октября выполнено 14 интеграционных проверок MariaDB и 13 HTTP-проверок. Подтверждены запись всех четырех полей, отсутствие записей при ошибках, сохранение decimal.MaxValue, числа 0.0000000000000000000000000001 и результата 1 / 3. При остановке базы показана ошибка сохранения. После пересоздания контейнера история сохранилась и новые расчеты снова записываются. Версия сервера: 11.4.13-MariaDB-ubu2404.
+
+| Первый операнд | Второй операнд | Действие | Результат |
+| --- | --- | --- | --- |
+
+| 12 | 4 | add | 16 |
+
+| 12.5 | 4 | multiply | 50 |
+
+| -3 | 4 | multiply | -12 |
+
+| 0.1 | 0.2 | add | 0.3 |
+
+| 101 | 202 | add | 303 |
+
+Это реальные записи, полученные при проверке. Журналы: docs/evidence/mariadb-integration-checks.txt и mariadb-records.txt. Пароли в отчете и архиве проекта отсутствуют.
+
+## 10 Материалы для завершения отчета
 
 Перед сдачей необходимо добавить фактическую ссылку на GitHub и скриншоты окна Visual Studio с appsettings.json, опубликованного репозитория и результата git clone. Для соответствия перечню методички также добавьте снимки терминала со сборкой образа и работающим контейнером по сохраненным журналам реальных команд.
 
@@ -203,9 +245,9 @@ docker stop calculator-16
 
 Скриншоты в разделах 3 и 4 подтверждают работу приложения из Docker-контейнера. Текстовые свидетельства сборки, состояния контейнера, остановки и повторного запуска находятся в docs/evidence.
 
-## 10 Вывод
+## 11 Вывод
 
-Разработан веб-калькулятор ASP.NET Core MVC и подготовлен Dockerfile. Образ собран, контейнер запущен на порту 5016; проверены вычисления, ошибки ввода, остановка и повторный запуск. Для завершения сдаваемого отчета остается опубликовать исходный код на GitHub, добавить ссылку, скриншоты репозитория, клонирования и требуемые снимки окон Visual Studio и терминала.
+Разработан и проверен веб-калькулятор с сохранением каждого успешного расчета в MariaDB. Образ собран; приложение и база запущены через Docker Compose. Проверены точность данных, обработка ошибок, остановка и повторный запуск, а также сохранность истории. Для завершения сдаваемого отчета остается опубликовать код на GitHub и добавить требуемые скриншоты репозитория, клонирования и окон Visual Studio и терминала.
 
 ## Источники
 
@@ -215,25 +257,33 @@ Microsoft Learn. Run an ASP.NET Core app in Docker containers. https://learn.mic
 
 Docker Docs. Install Docker Desktop on Windows. https://docs.docker.com/desktop/setup/install/windows-install/
 
+MariaDB Documentation. DECIMAL. https://mariadb.com/docs/server/reference/data-types/numeric-data-types/decimal
+
+MySqlConnector 2.6.2. https://www.nuget.org/packages/MySqlConnector/2.6.2
+
 ## Приложение А Контроллер
 
 CalculatorWeb/Controllers/CalculatorController.cs
 
 ```
+using CalculatorWeb.Data;
 using CalculatorWeb.Models;
 using CalculatorWeb.Services;
 using Microsoft.AspNetCore.Mvc;
 
 namespace CalculatorWeb.Controllers;
 
-public sealed class CalculatorController(CalculatorService calculator) : Controller
+public sealed class CalculatorController(
+    CalculatorService calculator,
+    ICalculationRepository calculations,
+    ILogger<CalculatorController> logger) : Controller
 {
     [HttpGet]
     public IActionResult Index() => View(new CalculatorViewModel());
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public IActionResult Index(CalculatorViewModel model)
+    public async Task<IActionResult> Index(CalculatorViewModel model, CancellationToken cancellationToken = default)
     {
         var firstValid = CalculatorService.TryParseNumber(model.FirstNumber, out var first);
         var secondValid = CalculatorService.TryParseNumber(model.SecondNumber, out var second);
@@ -250,7 +300,9 @@ public sealed class CalculatorController(CalculatorService calculator) : Control
 
         try
         {
-            model.Result = CalculatorService.Format(calculator.Calculate(first, second, model.Operation));
+            var result = calculator.Calculate(first, second, model.Operation);
+            await calculations.SaveAsync(new CalculationRecord(first, second, model.Operation, result), cancellationToken);
+            model.Result = CalculatorService.Format(result);
             model.Expression = $"{CalculatorService.Format(first)} {CalculatorService.Symbol(model.Operation)} {CalculatorService.Format(second)}";
         }
         catch (DivideByZeroException)
@@ -260,6 +312,11 @@ public sealed class CalculatorController(CalculatorService calculator) : Control
         catch (OverflowException)
         {
             ModelState.AddModelError("", "Результат выходит за допустимый диапазон decimal. Используйте меньшие числа.");
+        }
+        catch (CalculationStorageException exception)
+        {
+            logger.LogError(exception, "Could not save a calculation to MariaDB.");
+            ModelState.AddModelError("", "Не удалось сохранить расчёт в базе данных. Попробуйте ещё раз позже.");
         }
 
         return View(model);
@@ -282,6 +339,12 @@ CalculatorWeb/appsettings.json
         "Url": "http://0.0.0.0:5016"
       }
     }
+  },
+  "Database": {
+    "Server": "localhost",
+    "Port": 3307,
+    "Name": "calculator",
+    "User": "calculator"
   },
   "Logging": {
     "LogLevel": {
@@ -310,11 +373,28 @@ CalculatorWeb/appsettings.Development.json
 CalculatorWeb/Program.cs
 
 ```
+using CalculatorWeb.Data;
 using CalculatorWeb.Services;
+using MySqlConnector;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllersWithViews();
 builder.Services.AddSingleton<CalculatorService>();
+var databasePassword = builder.Configuration["Database:Password"];
+if (string.IsNullOrWhiteSpace(databasePassword))
+    throw new InvalidOperationException("Set Database__Password before starting the application. See README.md.");
+var databaseConnection = new MySqlConnectionStringBuilder
+{
+    Server = builder.Configuration["Database:Server"] ?? "localhost",
+    Port = builder.Configuration.GetValue<uint>("Database:Port", 3307),
+    Database = builder.Configuration["Database:Name"] ?? "calculator",
+    UserID = builder.Configuration["Database:User"] ?? "calculator",
+    Password = databasePassword,
+    ConnectionTimeout = 5,
+    DefaultCommandTimeout = 10,
+};
+builder.Services.AddSingleton(_ => new MySqlDataSourceBuilder(databaseConnection.ConnectionString).Build());
+builder.Services.AddSingleton<ICalculationRepository, MariaDbCalculationRepository>();
 
 var app = builder.Build();
 if (!app.Environment.IsDevelopment())
@@ -325,6 +405,21 @@ if (!app.Environment.IsDevelopment())
 app.UseStaticFiles();
 app.UseRouting();
 app.MapGet("/health", () => Results.Text("OK"));
+app.MapGet("/health/ready", async (MySqlDataSource database, CancellationToken cancellationToken) =>
+{
+    try
+    {
+        await using var connection = await database.OpenConnectionAsync(cancellationToken);
+        await using var command = connection.CreateCommand();
+        command.CommandText = "SELECT 1 FROM calculations LIMIT 1;";
+        await command.ExecuteScalarAsync(cancellationToken);
+        return Results.Text("OK");
+    }
+    catch (Exception exception) when (exception is MySqlException or TimeoutException)
+    {
+        return Results.Text("Database unavailable", statusCode: StatusCodes.Status503ServiceUnavailable);
+    }
+});
 app.MapControllerRoute("default", "{controller=Calculator}/{action=Index}/{id?}");
 app.Run();
 ```

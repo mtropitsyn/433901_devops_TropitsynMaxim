@@ -13,3 +13,7 @@ tmp
 scripts
 methodology-page.html
 README.md
+.env
+.env.*
+database
+compose.yaml

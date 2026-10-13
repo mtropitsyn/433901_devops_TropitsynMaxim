@@ -18,35 +18,35 @@ jobs:
         run: |
           dotnet build CalculatorDocker.sln -c Release
           dotnet run --project CalculatorWeb.Checks -c Release --no-build
-      - name: Build Docker image
-        run: docker build --build-arg APP_PORT=5016 -t calculator:ci .
-      - name: Run and verify application
+      - name: Build and verify application with MariaDB
         shell: pwsh
         run: |
-          docker run -d -p 5016:5016 --name calculator-ci calculator:ci
-          if ($LASTEXITCODE -ne 0) { throw 'docker run failed' }
+          ./scripts/Initialize-Database.ps1
+          docker compose up -d --build --wait
+          if ($LASTEXITCODE -ne 0) { throw 'Compose startup failed' }
           for ($i=0; $i -lt 30; $i++) {
             try { Invoke-WebRequest http://localhost:5016/health | Out-Null; break } catch { Start-Sleep -Seconds 1 }
           }
-          ./scripts/Test-Web.ps1 -BaseUrl http://localhost:5016
-          docker stop calculator-ci
+          ./scripts/Test-Database.ps1 -VerifyDatabaseRestart
+          docker compose stop web
           if ($LASTEXITCODE -ne 0) { throw 'docker stop failed' }
-          $state = docker inspect --format '{{.State.Status}}' calculator-ci
-          if ($state.Trim() -ne 'exited') { throw 'Container is still running' }
+          $state = (docker compose ps -a --format json web | ConvertFrom-Json).State
+          if ($state -ne 'exited') { throw 'Container is still running' }
           $reachable = $false
           try { Invoke-WebRequest http://localhost:5016/health -TimeoutSec 2 | Out-Null; $reachable=$true } catch { }
           if ($reachable) { throw 'Application is accessible after stop' }
-          docker start calculator-ci
+          docker compose start web
           if ($LASTEXITCODE -ne 0) { throw 'docker start failed' }
           for ($i=0; $i -lt 30; $i++) {
             try { Invoke-WebRequest http://localhost:5016/health | Out-Null; break } catch { Start-Sleep -Seconds 1 }
           }
           ./scripts/Test-Web.ps1 -BaseUrl http://localhost:5016
-          docker stop calculator-ci
+          docker compose stop
           if ($LASTEXITCODE -ne 0) { throw 'Final docker stop failed' }
       - name: Container logs and state
         if: always()
         run: |
-          docker logs calculator-ci || true
-          docker ps -a
+          docker compose logs --tail 80
+          docker compose ps -a
+          docker compose stop
 

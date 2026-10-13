@@ -1,0 +1,129 @@
+.env already exists; existing database credentials are preserved.
+docker compose up -d --build --wait
+ Image 16-calculator:latest Building 
+#1 [internal] load local bake definitions
+#1 reading from stdin 635B 0.0s done
+#1 DONE 0.0s
+
+#2 [internal] load build definition from Dockerfile
+#2 transferring dockerfile: 780B 0.0s done
+#2 DONE 0.0s
+
+#3 [internal] load metadata for mcr.microsoft.com/dotnet/sdk:8.0
+#3 DONE 0.1s
+
+#4 [internal] load metadata for mcr.microsoft.com/dotnet/aspnet:8.0
+#4 DONE 0.1s
+
+#5 [internal] load .dockerignore
+#5 transferring context: 209B 0.0s done
+#5 DONE 0.0s
+
+#6 [internal] load build context
+#6 DONE 0.0s
+
+#7 [final 1/3] FROM mcr.microsoft.com/dotnet/aspnet:8.0@sha256:37b437202a4dc849a23638bfc5d76c091f2418c35300f78e855ddc57b6006412
+#7 resolve mcr.microsoft.com/dotnet/aspnet:8.0@sha256:37b437202a4dc849a23638bfc5d76c091f2418c35300f78e855ddc57b6006412 0.0s done
+#7 DONE 0.0s
+
+#8 [build 1/6] FROM mcr.microsoft.com/dotnet/sdk:8.0@sha256:4b5efd5b99842fdf232d116cdc04102bfc54560fd451d55a47999b1a33f03d31
+#8 resolve mcr.microsoft.com/dotnet/sdk:8.0@sha256:4b5efd5b99842fdf232d116cdc04102bfc54560fd451d55a47999b1a33f03d31 0.0s done
+#8 DONE 0.1s
+
+#6 [internal] load build context
+#6 transferring context: 1.55kB done
+#6 DONE 0.0s
+
+#9 [build 2/6] WORKDIR /src
+#9 CACHED
+
+#10 [build 4/6] RUN dotnet restore CalculatorWeb/CalculatorWeb.csproj
+#10 CACHED
+
+#11 [build 5/6] COPY CalculatorWeb/ CalculatorWeb/
+#11 CACHED
+
+#12 [final 2/3] WORKDIR /app
+#12 CACHED
+
+#13 [build 3/6] COPY CalculatorWeb/CalculatorWeb.csproj CalculatorWeb/
+#13 CACHED
+
+#14 [build 6/6] RUN dotnet publish CalculatorWeb/CalculatorWeb.csproj -c Release -o /app/publish --no-restore /p:UseAppHost=false
+#14 CACHED
+
+#15 [final 3/3] COPY --from=build /app/publish .
+#15 CACHED
+
+#16 exporting to image
+#16 exporting layers done
+#16 exporting manifest sha256:bb3adfae3e449569f713301e38440d0e0902779b13b5602505e8aa3d676438b5 done
+#16 exporting config sha256:09ba37fb010e9b47c1b0635c0d640fd83bc3e3e584d9165be6966e16787c0ca0 done
+#16 exporting attestation manifest sha256:099efd319e15589a24b82435ec06e7c23c3e9bef580239e4ac7fa3e29aa530e6
+#16 exporting attestation manifest sha256:099efd319e15589a24b82435ec06e7c23c3e9bef580239e4ac7fa3e29aa530e6 0.0s done
+#16 exporting manifest list sha256:95aa41bcff17a29eb8e9acdb7238b5981313819eb16e94fd85f772650b402bee 0.0s done
+#16 naming to docker.io/library/16-calculator:latest done
+#16 unpacking to docker.io/library/16-calculator:latest 0.0s done
+#16 DONE 0.2s
+
+#17 resolving provenance for metadata file
+#17 DONE 0.0s
+ Image 16-calculator:latest Built 
+ Container calculator-lab-db-1 Running 
+ Container calculator-lab-web-1 Running 
+ Container calculator-lab-db-1 Waiting 
+ Container calculator-lab-db-1 Healthy 
+ Container calculator-lab-db-1 Waiting 
+ Container calculator-lab-web-1 Waiting 
+ Container calculator-lab-db-1 Healthy 
+ Container calculator-lab-web-1 Healthy 
+docker compose ps
+NAME                   IMAGE                                                                     COMMAND                  SERVICE   CREATED         STATUS                   PORTS
+calculator-lab-db-1    mariadb:11.4                                                              "docker-entrypoint.s…"   db        3 minutes ago   Up 3 minutes (healthy)   127.0.0.1:3307->3306/tcp
+calculator-lab-web-1   sha256:5302e500a59c269278c446780d1299aded1f9b6e5fd4b8d6353bf1483491b6cf   "dotnet CalculatorWe…"   web       3 minutes ago   Up 3 minutes             0.0.0.0:5016->5016/tcp, [::]:5016->5016/tcp
+PASS: health endpoint
+PASS: stylesheet served
+PASS: HTTP add => 16
+PASS: HTTP subtract => 8
+PASS: HTTP multiply => -12
+PASS: HTTP divide => 3,5
+PASS: HTTP add => 0,3
+PASS: HTTP rejects [10, 0, divide]
+PASS: HTTP rejects [abc, 2, add]
+PASS: HTTP rejects [, , add]
+PASS: HTTP rejects [1, 2, invalid]
+PASS: HTTP rejects [79228162514264337593543950335, 2, multiply]
+PASS: POST without antiforgery token returns 400
+HTTP checks passed: 13
+PASS: five successful HTTP calculations create exactly five records; invalid requests create none
+PASS: MariaDB stores operands, operation and result for add
+PASS: MariaDB stores operands, operation and result for subtract
+PASS: MariaDB stores operands, operation and result for multiply
+PASS: MariaDB stores operands, operation and result for divide
+PASS: MariaDB stores operands, operation and result for add
+PASS: MariaDB preserves decimal precision [79228162514264337593543950335 add 0]
+PASS: MariaDB preserves decimal precision [0.0000000000000000000000000001 multiply 1]
+PASS: MariaDB preserves decimal precision [1 divide 3]
+PASS: MariaDB preserves decimal precision [-12.5 divide -2]
+PASS: all successful calculations are stored once
+Database checks passed: 11
+docker compose stop web
+ Container calculator-lab-web-1 Stopping 
+ Container calculator-lab-web-1 Stopped 
+PASS: the stopped application is inaccessible
+docker compose start web
+ Container calculator-lab-db-1 Waiting 
+ Container calculator-lab-db-1 Healthy 
+ Container calculator-lab-web-1 Starting 
+ Container calculator-lab-web-1 Started 
+PASS: the application responds again after docker start
+docker compose stop
+ Container calculator-lab-web-1 Stopping 
+ Container calculator-lab-web-1 Stopped 
+ Container calculator-lab-db-1 Stopping 
+ Container calculator-lab-db-1 Stopped 
+docker compose ps -a
+NAME                   IMAGE                                                                     COMMAND                  SERVICE   CREATED         STATUS                              PORTS
+calculator-lab-db-1    mariadb:11.4                                                              "docker-entrypoint.s…"   db        3 minutes ago   Exited (0) Less than a second ago   
+calculator-lab-web-1   sha256:5302e500a59c269278c446780d1299aded1f9b6e5fd4b8d6353bf1483491b6cf   "dotnet CalculatorWe…"   web       3 minutes ago   Exited (0) 1 second ago             
+Demonstration completed. MariaDB data is preserved. Use: docker compose start

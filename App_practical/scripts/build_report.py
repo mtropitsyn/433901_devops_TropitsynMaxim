@@ -20,8 +20,13 @@ from reportlab.platypus import (
 )
 
 ROOT = Path(__file__).resolve().parents[1]
+database_verification_path = ROOT / 'docs' / 'evidence' / 'mariadb-verification.json'
+database_evidence = json.loads(database_verification_path.read_text(encoding='utf-8-sig')) if database_verification_path.exists() else {}
+database_verified = database_evidence.get('Verified') is True
 verification_path = ROOT / 'docs' / 'evidence' / 'docker-verification.json'
 docker_evidence = json.loads(verification_path.read_text(encoding='utf-8-sig')) if verification_path.exists() else {}
+if database_verified:
+    docker_evidence = database_evidence
 docker_verified = docker_evidence.get('Verified') is True
 OUT = ROOT / 'output' / 'pdf'
 OUT.mkdir(parents=True, exist_ok=True)
@@ -120,12 +125,14 @@ para('ASP.NET Core MVC\nЗадание 1.7.1', 'ReportCenter')
 story.append(Spacer(1, 28 * mm))
 para('Выполнил Тропицын Максим Владимирович\nГруппа НМТ-433901\nНомер в журнале 16\nПреподаватель Лавров В. В.', 'ReportCenter')
 story.append(Spacer(1, 23 * mm))
-para('Екатеринбург 2026\nДата подготовки 6 октября 2026 года', 'ReportCenter')
+para('Екатеринбург 2026\nДата подготовки ' + ('13' if database_verified else '6') + ' октября 2026 года', 'ReportCenter')
 story.append(PageBreak())
 
 heading('1 Цель работы и состояние выполнения')
 para('Цель работы - разработать веб-калькулятор на ASP.NET Core MVC, подготовить Dockerfile, разместить исходный код на GitHub и проверить сборку, запуск, остановку и повторный запуск контейнера.')
-if docker_verified:
+if database_verified:
+    para('Приложение дополнено MariaDB: после каждого успешного расчета сохраняются два операнда, операция и результат. Образ 16-calculator:latest собран, приложение и MariaDB запущены через Docker Compose. Проверены HTTP-форма, запись в базу, точность decimal, обработка недоступности базы, сохранность истории после пересоздания ее контейнера, остановка и повторный запуск приложения. Публикация исходного кода на GitHub выполняется студентом самостоятельно.')
+elif docker_verified:
     para('Приложение прошло локальную сборку и проверку вычислений и HTTP-формы. На рабочем компьютере установлены WSL 3.0.1 и Docker Desktop 4.94.0. Образ 16-calculator:latest собран, контейнер calculator-16 запущен на порту 5016. Проверены HTTP-форма, остановка, недоступность после остановки и повторный запуск. Публикация исходного кода на GitHub выполняется студентом самостоятельно.')
 else:
     para('Разработанное приложение прошло локальную сборку и проверку вычислений и HTTP-формы. Dockerfile и сценарии контейнерного запуска подготовлены. Фактическая сборка и запуск контейнера пока не выполнены: Docker Desktop и WSL отсутствуют на рабочем компьютере. Публикация исходного кода на GitHub выполняется студентом самостоятельно.')
@@ -143,8 +150,8 @@ para('Создано решение CalculatorDocker.sln с MVC-проектом
 para('Модель CalculatorViewModel хранит два операнда и выбранную операцию. Контроллер CalculatorController обрабатывает GET-запрос страницы и POST-запрос формы. CalculatorService разбирает ввод и выполняет арифметические операции. Razor-представление показывает результат или сообщение об ошибке.')
 para('Числа обрабатываются как decimal. Дробный разделитель может быть точкой или запятой. Проверяются обязательность ввода, корректность числа, допустимость операции, деление на ноль и переполнение. На странице отображаются ФИО и группа студента. POST-форма использует защитный токен ASP.NET Core.')
 para('Номер студента в журнале - 16. Индивидуальный порт рассчитан по правилу 5000 + 16 = 5016. В appsettings.json адрес Kestrel задан как http://0.0.0.0:5016. В браузере используется http://localhost:5016.')
-code('dotnet build CalculatorDocker.sln -c Release\ndotnet run --project CalculatorWeb\ndotnet run --project CalculatorWeb.Checks -c Release\n./scripts/Test-Web.ps1 -BaseUrl http://localhost:5016')
-para('Сборка завершилась без ошибок и предупреждений. Пройдено 23 проверки арифметики и контроллера, а также 13 проверок HTTP-интерфейса. Команда dotnet publish с параметром UseAppHost=false успешно создала опубликованную DLL и необходимые файлы. Текстовые журналы сохранены в docs/evidence.')
+code('dotnet build CalculatorDocker.sln -c Release\n./scripts/Start-Local.ps1\ndotnet run --project CalculatorWeb.Checks -c Release\n./scripts/Test-Web.ps1 -BaseUrl http://localhost:5016')
+para('Сборка завершилась без ошибок и предупреждений. Пройдено ' + ('32' if database_verified else '23') + ' проверки арифметики и контроллера, а также 13 проверок HTTP-интерфейса. Команда dotnet publish с параметром UseAppHost=false успешно создала опубликованную DLL и необходимые файлы. Текстовые журналы сохранены в docs/evidence.')
 table(['Проверка', 'Ввод', 'Результат'], [
     ['Сложение', '12 + 4', '16'], ['Вычитание', '12 - 4', '8'],
     ['Умножение', '-3 × 4', '-12'], ['Деление', '7 ÷ 2', '3,5'],
@@ -156,7 +163,7 @@ table(['Проверка', 'Ввод', 'Результат'], [
 story.append(PageBreak())
 
 heading('3 Проверка веб интерфейса')
-para(('Приложение в контейнере calculator-16' if docker_verified else 'Локальное приложение') + ' открыто в браузере на порту 5016. Введены числа 12,5 и 4, выбрано умножение и нажата кнопка вычисления. Получен результат 50.')
+para('При первичной проверке интерфейса 6 октября приложение открыто в браузере на порту 5016. Введены числа 12,5 и 4, выбрано умножение и нажата кнопка вычисления. Получен результат 50. Скриншоты разделов 3 и 4 относятся к этой проверке; проверка новой версии с MariaDB описана в разделе 9.')
 screenshot('docker-calculator-result.jpg' if docker_verified else 'calculator-result.jpg', 'Рисунок 1 - Калькулятор на localhost:5016 и результат умножения' + (' в Docker' if docker_verified else ' при локальном запуске'))
 story.append(PageBreak())
 heading('4 Проверка обработки ошибки')
@@ -178,8 +185,8 @@ story.append(PageBreak())
 
 heading('7 Сборка и запуск Docker контейнера')
 para('Для этого этапа необходимо установить и запустить Docker Desktop с поддержкой Linux containers либо использовать сервер с Docker Engine. Команда docker version должна показывать сведения о Client и Server. Перед контейнерным запуском следует остановить локальный процесс dotnet run, чтобы освободить порт 5016.')
-code('docker version\ndocker build -t 16-calculator:latest .\ndocker images -a\ndocker run -d -p 5016:5016 --name calculator-16 16-calculator:latest\ndocker ps\ndocker logs calculator-16')
-para('Имя образа начинается с номера студента в журнале. Параметр -d задает фоновый запуск, -p публикует порт 5016 хоста и связывает его с портом 5016 контейнера. После запуска нужно открыть http://localhost:5016 или адрес удаленного сервера с этим портом.')
+code('docker version\ndocker build -t 16-calculator:latest .\ndocker images -a\n./scripts/Initialize-Database.ps1\ndocker compose up -d --build --wait\ndocker compose ps\ndocker compose logs web')
+para('Имя образа начинается с номера студента в журнале. Параметр -d задает фоновый запуск. В compose.yaml публикуется порт 5016 хоста и контейнера приложения. MariaDB запускается отдельно, приложение подключается к db:3306. После запуска нужно открыть http://localhost:5016. Пароли создаются в локальном .env; он исключен из Git и контекста Docker-сборки.')
 if docker_verified:
     para('Образ успешно собран из Dockerfile. Контейнер запущен и обслуживает страницу калькулятора и endpoint /health на порту 5016. Все 13 HTTP-проверок пройдены внутри контейнера. Журналы сборки, версии Docker, списка образов и контейнеров сохранены в docs/evidence.')
     para('Идентификатор собранного образа:')
@@ -189,22 +196,36 @@ else:
     para('Ожидаемый результат этапа - созданный образ в docker images, работающий контейнер в docker ps и доступный калькулятор в браузере. Эти результаты должны быть подтверждены реальным выполнением команд и скриншотами; на дату подготовки отчета контейнерный запуск не проверен.')
 
 heading('8 Остановка и повторный запуск')
-code("docker stop calculator-16\ndocker ps -a\ndocker inspect --format '{{.State.Status}}' calculator-16\ndocker start calculator-16\ndocker ps\ndocker stop calculator-16")
-para('После docker stop ожидается состояние exited. При обновлении страницы приложение должно быть недоступно. После docker start тот же контейнер должен снова обслуживать запросы. Остановка сохраняет контейнер и его имя для повторного запуска.')
+code('docker compose stop web\ndocker compose ps -a\ndocker compose start web\ndocker compose ps\ndocker compose stop')
+para('После остановки ожидается состояние exited и недоступность приложения. После повторного запуска контейнер снова обслуживает запросы. Docker Compose управляет приложением и MariaDB; история остается в постоянном томе базы.')
 if docker_verified:
-    para('При фактической проверке после остановки получено состояние exited, HTTP-запрос не установил соединение. После docker start endpoint /health снова вернул OK. По завершении проверки контейнер оставлен остановленным. Результаты зафиксированы в docker-lifecycle.txt и docker-verification.json.')
+    para('При фактической проверке после остановки получено состояние exited, HTTP-запрос не установил соединение. После повторного запуска приложение снова вернуло OK. ' + ('После демонстрации приложение и база снова запущены для использования. Результаты зафиксированы в mariadb-demo.txt и mariadb-verification.json.' if database_verified else 'Результаты первичной проверки сохранены в docker-lifecycle.txt и docker-verification.json.'))
     table(['Проверка', 'Фактический результат'], [
-        ['Контейнер', docker_evidence.get('ContainerId', '')[:12] + ' / calculator-16'],
+        ['Контейнер', docker_evidence.get('ContainerId', '')[:12] + ' / ' + docker_evidence.get('Container', 'calculator-16')],
         ['Публикация порта', '0.0.0.0:5016 -> 5016/tcp'],
         ['HTTP-проверки', '13 из 13 пройдены'],
         ['После docker stop', 'exited; запрос к /health не установил соединение'],
         ['После docker start', '/health вернул 200 OK'],
-        ['Завершение демонстрации', 'Контейнер остановлен; код завершения 0'],
+        ['Завершение демонстрации', 'Оба контейнера запущены для использования' if database_verified else 'Контейнер остановлен; код завершения 0'],
     ], [57, 101])
 para('В scripts/Demo-Docker.ps1 подготовлен сценарий, который собирает образ, запускает контейнер, выполняет 13 HTTP-проверок, останавливает приложение, проверяет его недоступность, повторно запускает и снова останавливает контейнер. Существующие контейнеры не удаляются.')
 code('./scripts/Demo-Docker.ps1 -StudentNumber 16')
 
-heading('9 Материалы для завершения отчета')
+heading('9 Добавление MariaDB')
+para('Добавлена MariaDB 11.4 и библиотека MySqlConnector 2.6.2. В таблице calculator.calculations хранятся first_operand, second_operand, operation и result, а также номер записи id и время created_at в UTC. Значения operation: add, subtract, multiply, divide. Числа хранятся как DECIMAL(57,28), сохраняющий диапазон и точность типа decimal приложения.')
+code((ROOT / 'database' / 'init.sql').read_text(encoding='utf-8-sig'))
+para('Контроллер ожидает параметризованный INSERT перед показом результата. При успешной записи появляется сообщение «Расчет сохранен». При недоступности базы показывается ошибка сохранения; результат не выдается как успешно сохраненный. Некорректные запросы, деление на ноль и переполнение не создают запись.')
+para('Приложение подключается к db:3306; локальная разработка использует localhost:3307. Пользователь базы - calculator, пароль задается в .env. SQL-файл инициализирует таблицу. Постоянный том сохраняет историю при пересоздании базы.')
+code('./scripts/Show-Calculations.ps1 -Limit 20\n./scripts/Test-Database.ps1 -VerifyDatabaseRestart')
+if database_verified:
+    para('13 октября выполнено 14 интеграционных проверок MariaDB и 13 HTTP-проверок. Подтверждены запись всех четырех полей, отсутствие записей при ошибках, сохранение decimal.MaxValue, числа 0.0000000000000000000000000001 и результата 1 / 3. При остановке базы показана ошибка сохранения. После пересоздания контейнера история сохранилась и новые расчеты снова записываются. Версия сервера: ' + database_evidence.get('DatabaseVersion', '') + '.')
+    table(['Первый операнд', 'Второй операнд', 'Действие', 'Результат'], [
+        ['12', '4', 'add', '16'], ['12.5', '4', 'multiply', '50'], ['-3', '4', 'multiply', '-12'],
+        ['0.1', '0.2', 'add', '0.3'], ['101', '202', 'add', '303'],
+    ], [42, 42, 37, 37])
+    para('Это реальные записи, полученные при проверке. Журналы: docs/evidence/mariadb-integration-checks.txt и mariadb-records.txt. Пароли в отчете и архиве проекта отсутствуют.')
+
+heading('10 Материалы для завершения отчета')
 para('Перед сдачей необходимо добавить фактическую ссылку на GitHub и скриншоты окна Visual Studio с appsettings.json, опубликованного репозитория и результата git clone. Для соответствия перечню методички также добавьте снимки терминала со сборкой образа и работающим контейнером по сохраненным журналам реальных команд.')
 para('Форма отчета из вложения не была предоставлена; использована обычная структура практической работы с титульным листом, этапами, результатами и листингами.')
 if docker_verified:
@@ -212,8 +233,10 @@ if docker_verified:
 else:
     para('Локальные скриншоты в разделах 3 и 4 подтверждают работу приложения до контейнеризации. После Docker-проверки их следует дополнить скриншотами приложения, запущенного из контейнера, и обновить состояние этапов в разделе 1.')
 
-heading('10 Вывод')
-if docker_verified:
+heading('11 Вывод')
+if database_verified:
+    para('Разработан и проверен веб-калькулятор с сохранением каждого успешного расчета в MariaDB. Образ собран; приложение и база запущены через Docker Compose. Проверены точность данных, обработка ошибок, остановка и повторный запуск, а также сохранность истории. Для завершения сдаваемого отчета остается опубликовать код на GitHub и добавить требуемые скриншоты репозитория, клонирования и окон Visual Studio и терминала.')
+elif docker_verified:
     para('Разработан веб-калькулятор ASP.NET Core MVC и подготовлен Dockerfile. Образ собран, контейнер запущен на порту 5016; проверены вычисления, ошибки ввода, остановка и повторный запуск. Для завершения сдаваемого отчета остается опубликовать исходный код на GitHub, добавить ссылку, скриншоты репозитория, клонирования и требуемые снимки окон Visual Studio и терминала.')
 else:
     para('Разработан и локально проверен веб-калькулятор ASP.NET Core MVC. Подготовлены Dockerfile, настройки порта 5016, команды GitHub и сценарии контейнерной демонстрации. Полное завершение практической работы требует фактической публикации репозитория, выполнения Docker build, Docker run, Docker stop и Docker start и добавления соответствующих свидетельств в отчет.')
@@ -222,6 +245,8 @@ heading('Источники')
 para('Лавров В. В., Гурин И. А. Основы методологии Development Operation. Практикум. Екатеринбург, 2025. 140 с. Пункт 1.7.1, с. 31-35. https://elar.urfu.ru/handle/10995/145068', 'ReportSource')
 para('Microsoft Learn. Run an ASP.NET Core app in Docker containers. https://learn.microsoft.com/aspnet/core/host-and-deploy/docker/building-net-docker-images', 'ReportSource')
 para('Docker Docs. Install Docker Desktop on Windows. https://docs.docker.com/desktop/setup/install/windows-install/', 'ReportSource')
+para('MariaDB Documentation. DECIMAL. https://mariadb.com/docs/server/reference/data-types/numeric-data-types/decimal', 'ReportSource')
+para('MySqlConnector 2.6.2. https://www.nuget.org/packages/MySqlConnector/2.6.2', 'ReportSource')
 story.append(PageBreak())
 
 for title, path in [
