@@ -1,11 +1,14 @@
-# Build results
-[Dd]ebug/
-[Rr]elease/
-x64/
-x86/
-bin/
-obj/
-packages/
-
-# Visual Studio 2022 cache/options directory
+**/bin/
+**/obj/
 .vs/
+.idea/
+*.user
+*.suo
+*.log
+tmp/
+output/
+methodology-page.html
+.env
+.env.*
+!.env.example
+backups/

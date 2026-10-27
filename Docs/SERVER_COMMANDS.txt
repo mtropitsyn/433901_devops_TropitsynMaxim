@@ -1,0 +1,77 @@
+КОМАНДЫ ДЛЯ ЦЕЛЕВОГО СЕРВЕРА В PuTTY
+Вводить по одной строке. Выполнять из папки с compose.yaml.
+Полные объяснения, новый сервер и HeidiSQL — в SERVER_DEPLOYMENT.md.
+
+Обновить прежнюю серверную папку:
+cd ~/433901_devops_TropitsynMaxim/App_practical
+git pull --ff-only
+
+Если на новом Ubuntu/Debian ещё нет Docker:
+sudo bash scripts/install-docker-server.sh
+
+Создать настройки, не меняя существующие пароли:
+sudo bash scripts/init-server-env.sh
+sudo chown "$(id -un)" .env
+chmod 600 .env
+sed -i 's/^APP_PORT=.*/APP_PORT=5316/' .env
+sed -i 's/^DB_PORT=.*/DB_PORT=53316/' .env
+sed -i 's/^COMPOSE_PROJECT_NAME=.*/COMPOSE_PROJECT_NAME=tropitsyn16/' .env
+
+Проверить занятые порты и конфигурацию:
+sudo ss -lntp | grep -E ':5316|:53316'
+sudo docker ps
+sudo docker compose config --quiet
+
+Запустить MariaDB:
+sudo docker compose pull db
+sudo docker compose up -d --wait db
+sudo bash scripts/prepare-database.sh
+
+Собрать и запустить калькулятор:
+sudo docker compose build web
+sudo docker compose up -d --wait web
+
+Проверить:
+sudo docker compose ps
+sudo docker compose images
+curl -f http://127.0.0.1:5316/health/ready
+
+Сайт в браузере своего компьютера:
+http://IP_ТВОЕГО_СЕРВЕРА:5316
+
+Открыть SQL-клиент, ввести MARIADB_PASSWORD из .env:
+sudo docker compose exec db mariadb -u calculator -p 16-WebCalculatorDb
+
+Следующие строки вводятся в MariaDB, не в Bash:
+SELECT * FROM DataInputVariants;
+SELECT * FROM __EFMigrationsHistory;
+exit
+
+Остановить сайт:
+sudo docker compose stop web
+sudo docker compose ps -a
+
+Запустить снова:
+sudo docker compose up -d --wait web
+
+Обновить после следующего push:
+git pull --ff-only
+sudo docker compose build web
+sudo docker compose up -d --wait web
+
+Журналы при ошибке:
+sudo docker compose logs --tail=80 web
+sudo docker compose logs --tail=80 db
+
+PuTTY / Connection / SSH / Tunnels:
+Source port: 13316
+Destination: 127.0.0.1:53316
+Режим: Local. Add. Сохранить сессию и подключиться.
+
+HeidiSQL / MariaDB или MySQL TCP/IP:
+Хост: 127.0.0.1
+Порт: 13316
+Пользователь: calculator
+Пароль: MARIADB_PASSWORD из .env на сервере
+База: 16-WebCalculatorDb
+PuTTY оставлять открытым, пока используется HeidiSQL.

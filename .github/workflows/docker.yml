@@ -1,0 +1,56 @@
+name: Build and verify calculator container
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  docker:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: '8.0.x'
+      - name: Build and check calculations
+        run: |
+          dotnet build CalculatorDocker.sln -c Release
+          dotnet run --project CalculatorWeb.Checks -c Release --no-build
+      - name: Build and verify application with MariaDB
+        shell: pwsh
+        run: |
+          ./scripts/Initialize-Database.ps1
+          dotnet tool restore
+          if ($LASTEXITCODE -ne 0) { throw 'EF tools restore failed' }
+          dotnet ef migrations has-pending-model-changes --project CalculatorWeb --configuration Release --no-build
+          if ($LASTEXITCODE -ne 0) { throw 'EF model and migrations do not match' }
+          docker compose up -d --build --wait
+          if ($LASTEXITCODE -ne 0) { throw 'Compose startup failed' }
+          for ($i=0; $i -lt 30; $i++) {
+            try { Invoke-WebRequest http://localhost:5316/health | Out-Null; break } catch { Start-Sleep -Seconds 1 }
+          }
+          ./scripts/Test-Database.ps1 -VerifyDatabaseRestart
+          docker compose stop web
+          if ($LASTEXITCODE -ne 0) { throw 'docker stop failed' }
+          $state = (docker compose ps -a --format json web | ConvertFrom-Json).State
+          if ($state -ne 'exited') { throw 'Container is still running' }
+          $reachable = $false
+          try { Invoke-WebRequest http://localhost:5316/health -TimeoutSec 2 | Out-Null; $reachable=$true } catch { }
+          if ($reachable) { throw 'Application is accessible after stop' }
+          docker compose start web
+          if ($LASTEXITCODE -ne 0) { throw 'docker start failed' }
+          for ($i=0; $i -lt 30; $i++) {
+            try { Invoke-WebRequest http://localhost:5316/health | Out-Null; break } catch { Start-Sleep -Seconds 1 }
+          }
+          ./scripts/Test-Web.ps1 -BaseUrl http://localhost:5316
+          docker compose stop
+          if ($LASTEXITCODE -ne 0) { throw 'Final docker stop failed' }
+      - name: Container logs and state
+        if: always()
+        run: |
+          docker compose logs --tail 80
+          docker compose ps -a
+          docker compose stop
+

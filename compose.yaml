@@ -1,0 +1,50 @@
+name: tropitsyn16
+
+services:
+  db:
+    image: mariadb:11.4
+    environment:
+      MARIADB_DATABASE: 16-WebCalculatorDb
+      MARIADB_USER: calculator
+      MARIADB_PASSWORD: ${MARIADB_PASSWORD:?Run sudo bash scripts/init-server-env.sh}
+      MARIADB_ROOT_PASSWORD: ${MARIADB_ROOT_PASSWORD:?Run sudo bash scripts/init-server-env.sh}
+      TZ: UTC
+    ports:
+      - "127.0.0.1:${DB_PORT:-53316}:3306"
+    volumes:
+      - mariadb-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 30s
+    restart: unless-stopped
+
+  web:
+    image: ${STUDENT_NUMBER:-16}-calculator:latest
+    build:
+      context: .
+      args:
+        APP_PORT: ${APP_PORT:-5316}
+    environment:
+      Database__Server: db
+      Database__Port: 3306
+      Database__Name: 16-WebCalculatorDb
+      Database__User: calculator
+      Database__Password: ${MARIADB_PASSWORD:?Run sudo bash scripts/init-server-env.sh}
+    ports:
+      - "${APP_PORT:-5316}:${APP_PORT:-5316}"
+    depends_on:
+      db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "dotnet", "CalculatorWeb.dll", "--health-check"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 30s
+    restart: unless-stopped
+
+volumes:
+  mariadb-data:
