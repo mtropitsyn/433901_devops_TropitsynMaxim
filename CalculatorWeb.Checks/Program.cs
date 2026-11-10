@@ -2,6 +2,8 @@ using CalculatorWeb.Controllers;
 using CalculatorWeb.Data;
 using CalculatorWeb.Models;
 using CalculatorWeb.Services;
+using Confluent.Kafka;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging.Abstractions;
 
@@ -36,40 +38,54 @@ Throws<ArgumentException>(() => calculator.Calculate(2, 3, "invalid"), "unknown 
 Check(CalculatorService.Format(3.5m) == "3,5", "Russian result format");
 
 var saved = new RecordingCalculationRepository();
-CalculatorController CreateController(ICalculationRepository repository) =>
-    new(calculator, repository, NullLogger<CalculatorController>.Instance);
-var controller = CreateController(saved);
+var published = new RecordingCalculationPublisher();
+CalculatorController CreateController(ICalculationPublisher publisher) =>
+    new(calculator, saved, publisher, NullLogger<CalculatorController>.Instance)
+    {
+        ControllerContext = new ControllerContext { HttpContext = new DefaultHttpContext() },
+    };
+var controller = CreateController(published);
 var success = new CalculatorViewModel { FirstNumber = "12,5", SecondNumber = "4", Operation = "multiply" };
-Check(await controller.Index(success) is ViewResult && success.Result == "50", "controller result");
-Check(saved.Records.Count == 1 && saved.Records[0] == new CalculationRecord(12.5m, 4, "multiply", 50),
-    "successful calculation saves both operands, operation and result exactly once");
-controller = CreateController(saved);
+var redirect = await controller.Index(success) as RedirectToActionResult;
+var request = published.Requests.Single();
+Check(redirect?.ActionName == "Result" && Equals(redirect.RouteValues?["id"], request.RequestId),
+    "controller redirects to the result for the published request");
+Check(request.RequestId != Guid.Empty && request.FirstOperand == 12.5m && request.SecondOperand == 4 &&
+    request.Operation == "multiply" && saved.Records.Count == 0, "form publishes operands without saving a result");
+Check(await controller.Result(request.RequestId, default) is ViewResult { ViewName: "Pending" } &&
+    controller.Response.StatusCode == StatusCodes.Status202Accepted, "result waits for the consumer");
+await saved.SaveAsync(new CalculationRecord(12.5m, 4, "multiply", 50, request.RequestId));
+controller = CreateController(published);
+Check(await controller.Result(request.RequestId, default) is ViewResult
+    { Model: CalculatorViewModel { Result: "50", Expression: "12,5 × 4" } },
+    "result page reads and formats the persisted result");
+controller = CreateController(published);
 var zero = new CalculatorViewModel { FirstNumber = "10", SecondNumber = "0", Operation = "divide" };
 await controller.Index(zero);
 Check(!controller.ModelState.IsValid && zero.Result is null, "controller handles division by zero");
-Check(saved.Records.Count == 1, "division by zero is not saved");
-controller = CreateController(saved);
+Check(published.Requests.Count == 1, "division by zero is not published");
+controller = CreateController(published);
 var malformed = new CalculatorViewModel { FirstNumber = "abc", SecondNumber = "4", Operation = "add" };
 await controller.Index(malformed);
 Check(!controller.ModelState.IsValid && malformed.Result is null, "controller handles malformed input");
-Check(saved.Records.Count == 1, "malformed input is not saved");
-controller = CreateController(saved);
+Check(published.Requests.Count == 1, "malformed input is not published");
+controller = CreateController(published);
 var overflow = new CalculatorViewModel { FirstNumber = decimal.MaxValue.ToString(), SecondNumber = "2", Operation = "multiply" };
 await controller.Index(overflow);
-Check(!controller.ModelState.IsValid && overflow.Result is null && saved.Records.Count == 1,
-    "overflow does not create a history entry");
-controller = CreateController(saved);
+Check(!controller.ModelState.IsValid && overflow.Result is null && published.Requests.Count == 1,
+    "overflow is not published");
+controller = CreateController(published);
 await controller.Index(new CalculatorViewModel { FirstNumber = "1", SecondNumber = "2", Operation = "invalid" });
-Check(!controller.ModelState.IsValid && saved.Records.Count == 1, "invalid operation is not saved");
-var failing = new RecordingCalculationRepository { Failure = new CalculationStorageException("Unavailable") };
+Check(!controller.ModelState.IsValid && published.Requests.Count == 1, "invalid operation is not published");
+var failing = new RecordingCalculationPublisher { Failure = new KafkaException(new Error(ErrorCode.Local_TimedOut)) };
 controller = CreateController(failing);
 var failed = new CalculatorViewModel { FirstNumber = "1", SecondNumber = "2", Operation = "add" };
-Check(await controller.Index(failed) is ViewResult && !controller.ModelState.IsValid,
-    "database failure is shown as a form error");
-Check(failed.Result is null && failed.Expression is null && failing.Records.Count == 0,
+Check(await controller.Index(failed) is ViewResult && !controller.ModelState.IsValid &&
+    controller.Response.StatusCode == StatusCodes.Status503ServiceUnavailable, "Kafka failure is shown as a form error");
+Check(failed.Result is null && failed.Expression is null && failing.Requests.Count == 0,
     "unsaved result is not presented as successful");
-controller = CreateController(saved);
-Check(controller.Index() is ViewResult && saved.Records.Count == 1, "GET does not insert calculations");
+controller = CreateController(published);
+Check(controller.Index() is ViewResult && published.Requests.Count == 1, "GET does not publish calculations");
 using var cancelled = new CancellationTokenSource();
 cancelled.Cancel();
 try
@@ -79,20 +95,33 @@ try
 }
 catch (OperationCanceledException)
 {
-    Check(saved.Records.Count == 1, "request cancellation reaches database persistence");
+    Check(published.Requests.Count == 1, "request cancellation reaches the publisher");
 }
 Console.WriteLine($"Checks passed: {passed}");
 
 sealed class RecordingCalculationRepository : ICalculationRepository
 {
     public List<CalculationRecord> Records { get; } = [];
+    public Task SaveAsync(CalculationRecord calculation, CancellationToken cancellationToken = default)
+    {
+        Records.Add(calculation);
+        return Task.CompletedTask;
+    }
+
+    public Task<CalculationRecord?> FindAsync(Guid requestId, CancellationToken cancellationToken = default) =>
+        Task.FromResult(Records.SingleOrDefault(record => record.RequestId == requestId));
+}
+
+sealed class RecordingCalculationPublisher : ICalculationPublisher
+{
+    public List<CalculationRequest> Requests { get; } = [];
     public Exception? Failure { get; init; }
 
-    public Task SaveAsync(CalculationRecord calculation, CancellationToken cancellationToken = default)
+    public Task PublishAsync(CalculationRequest request, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
         if (Failure is not null) return Task.FromException(Failure);
-        Records.Add(calculation);
+        Requests.Add(request);
         return Task.CompletedTask;
     }
 }

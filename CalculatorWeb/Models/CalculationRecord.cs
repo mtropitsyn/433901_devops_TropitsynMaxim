@@ -4,4 +4,5 @@ public sealed record CalculationRecord(
     decimal FirstOperand,
     decimal SecondOperand,
     string Operation,
-    decimal Result);
+    decimal Result,
+    Guid? RequestId = null);

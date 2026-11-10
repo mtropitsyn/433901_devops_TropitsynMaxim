@@ -13,6 +13,7 @@ public sealed class CalculatorDbContext(DbContextOptions<CalculatorDbContext> op
         calculation.ToTable("DataInputVariants");
         calculation.HasKey(row => row.ID_DataInputVariant);
         calculation.Property(row => row.ID_DataInputVariant).ValueGeneratedOnAdd();
+        calculation.HasIndex(row => row.RequestId).IsUnique();
         // Preserve the entire System.Decimal range, including 28 fractional digits.
         calculation.Property(row => row.Operand_1).HasPrecision(57, 28);
         calculation.Property(row => row.Operand_2).HasPrecision(57, 28);

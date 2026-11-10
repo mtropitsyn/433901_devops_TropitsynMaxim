@@ -22,3 +22,14 @@ VALUES ('20261027130146_m_init', '8.0.14');
 
 COMMIT;
 
+START TRANSACTION;
+
+ALTER TABLE `DataInputVariants` ADD `RequestId` char(36) COLLATE ascii_general_ci NULL;
+
+CREATE UNIQUE INDEX `IX_DataInputVariants_RequestId` ON `DataInputVariants` (`RequestId`);
+
+INSERT INTO `__EFMigrationsHistory` (`MigrationId`, `ProductVersion`)
+VALUES ('20261110104442_KafkaRequestId', '8.0.14');
+
+COMMIT;
+

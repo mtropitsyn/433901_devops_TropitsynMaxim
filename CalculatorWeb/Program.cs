@@ -27,6 +27,13 @@ builder.Services.AddDbContext<CalculatorDbContext>(options =>
     options.UseMySql(DatabaseConfiguration.ConnectionString(builder.Configuration, requirePassword: !EF.IsDesignTime),
         DatabaseConfiguration.ServerVersion));
 builder.Services.AddScoped<ICalculationRepository, MariaDbCalculationRepository>();
+builder.Services.AddOptions<KafkaOptions>().BindConfiguration("Kafka")
+    .Validate(options => !string.IsNullOrWhiteSpace(options.BootstrapServers)
+        && !string.IsNullOrWhiteSpace(options.Topic)
+        && !string.IsNullOrWhiteSpace(options.GroupId), "Configure the Kafka broker, topic and consumer group.")
+    .ValidateOnStart();
+builder.Services.AddSingleton<ICalculationPublisher, KafkaProducerService>();
+builder.Services.AddHostedService<KafkaConsumerService>();
 
 var app = builder.Build();
 // This lab runs one web replica. Apply the committed EF migrations before accepting requests.

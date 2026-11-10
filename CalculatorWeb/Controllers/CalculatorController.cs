@@ -1,6 +1,7 @@
 using CalculatorWeb.Data;
 using CalculatorWeb.Models;
 using CalculatorWeb.Services;
+using Confluent.Kafka;
 using Microsoft.AspNetCore.Mvc;
 
 namespace CalculatorWeb.Controllers;
@@ -8,6 +9,7 @@ namespace CalculatorWeb.Controllers;
 public sealed class CalculatorController(
     CalculatorService calculator,
     ICalculationRepository calculations,
+    ICalculationPublisher publisher,
     ILogger<CalculatorController> logger) : Controller
 {
     [HttpGet]
@@ -32,10 +34,11 @@ public sealed class CalculatorController(
 
         try
         {
-            var result = calculator.Calculate(first, second, model.Operation);
-            await calculations.SaveAsync(new CalculationRecord(first, second, model.Operation, result), cancellationToken);
-            model.Result = CalculatorService.Format(result);
-            model.Expression = $"{CalculatorService.Format(first)} {CalculatorService.Symbol(model.Operation)} {CalculatorService.Format(second)}";
+            // Validate the range before enqueueing. The consumer calculates the value it stores.
+            _ = calculator.Calculate(first, second, model.Operation);
+            var request = new CalculationRequest(Guid.NewGuid(), first, second, model.Operation);
+            await publisher.PublishAsync(request, cancellationToken);
+            return RedirectToAction(nameof(Result), new { id = request.RequestId });
         }
         catch (DivideByZeroException)
         {
@@ -45,13 +48,40 @@ public sealed class CalculatorController(
         {
             ModelState.AddModelError("", "Результат выходит за допустимый диапазон decimal. Используйте меньшие числа.");
         }
-        catch (CalculationStorageException exception)
+        catch (KafkaException exception)
         {
-            logger.LogError(exception, "Could not save a calculation to MariaDB.");
-            ModelState.AddModelError("", "Не удалось сохранить расчёт в базе данных. Попробуйте ещё раз позже.");
+            logger.LogError(exception, "Could not publish a calculation to Kafka.");
+            ModelState.AddModelError("", "Не удалось подтвердить отправку расчёта в Kafka. Проверьте подключение к брокеру.");
+            Response.StatusCode = StatusCodes.Status503ServiceUnavailable;
         }
 
         return View(model);
+    }
+
+    [HttpGet]
+    [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
+    public async Task<IActionResult> Result(Guid id, CancellationToken cancellationToken)
+    {
+        if (id == Guid.Empty)
+            return NotFound();
+
+        var calculation = await calculations.FindAsync(id, cancellationToken);
+        if (calculation is null)
+        {
+            Response.StatusCode = StatusCodes.Status202Accepted;
+            return View("Pending", id);
+        }
+
+        var first = CalculatorService.Format(calculation.FirstOperand);
+        var second = CalculatorService.Format(calculation.SecondOperand);
+        return View(nameof(Index), new CalculatorViewModel
+        {
+            FirstNumber = first,
+            SecondNumber = second,
+            Operation = calculation.Operation,
+            Result = CalculatorService.Format(calculation.Result),
+            Expression = $"{first} {CalculatorService.Symbol(calculation.Operation)} {second}",
+        });
     }
 
     [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]

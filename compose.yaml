@@ -22,7 +22,7 @@ services:
     restart: unless-stopped
 
   web:
-    image: ${STUDENT_NUMBER:-16}-calculator:latest
+    image: ${STUDENT_NUMBER:-16}-calculator:kafka
     build:
       context: .
       args:
@@ -33,6 +33,9 @@ services:
       Database__Name: 16-WebCalculatorDb
       Database__User: calculator
       Database__Password: ${MARIADB_PASSWORD:?Run sudo bash scripts/init-server-env.sh}
+      Kafka__BootstrapServers: ${KAFKA_BOOTSTRAP_SERVERS:-93.88.178.186:9094}
+      Kafka__Topic: ${KAFKA_TOPIC:-tropitsyn16-calculations}
+      Kafka__GroupId: ${KAFKA_GROUP_ID:-tropitsyn16-calculator-worker}
     ports:
       - "${APP_PORT:-5316}:${APP_PORT:-5316}"
     depends_on:

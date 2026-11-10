@@ -7,4 +7,5 @@ public sealed class DataInputVariant
     public decimal Operand_2 { get; set; }
     public string Type_operation { get; set; } = "";
     public decimal Result { get; set; }
+    public Guid? RequestId { get; set; }
 }

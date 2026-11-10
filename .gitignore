@@ -11,4 +11,5 @@ methodology-page.html
 .env
 .env.*
 !.env.example
+compose.override.yaml
 backups/

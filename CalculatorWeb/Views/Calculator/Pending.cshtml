@@ -1,0 +1,14 @@
+@model Guid
+@{
+    ViewData["Title"] = "Ожидание результата";
+}
+<section class="calculator-page">
+    <div class="calculator-card">
+        <h2>Расчёт отправлен в Kafka</h2>
+        <p id="pending-status" role="status">Ожидаем обработку и запись результата в MariaDB.</p>
+        <p>Номер запроса: <code>@Model</code></p>
+        <a class="reset-link" asp-action="Result" asp-route-id="@Model">Проверить результат</a>
+        <a class="reset-link" asp-action="Index">Новый расчёт</a>
+    </div>
+</section>
+<script src="~/js/pending-result.js" asp-append-version="true" defer></script>
