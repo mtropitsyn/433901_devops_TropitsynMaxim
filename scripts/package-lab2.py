@@ -7,7 +7,7 @@ files = [
     '.dockerignore', '.env.example', '.gitattributes', '.gitignore',
     'CalculatorDocker.sln', 'Dockerfile', 'compose.yaml', 'README.md',
     'database/prepare.sql', 'database/migrations.sql',
-    'docs/SERVER_DEPLOYMENT.md', 'docs/SERVER_COMMANDS.txt', 'docs/VERIFICATION.md',
+    'Docs/VERIFICATION.md',
     'scripts/init-server-env.sh', 'scripts/install-docker-server.sh',
     'scripts/prepare-database.sh', 'scripts/Prepare-Database.ps1',
     'scripts/Initialize-Database.ps1', 'scripts/Show-Calculations.ps1',

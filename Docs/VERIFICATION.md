@@ -8,4 +8,4 @@
 - dotnet ef migrations script: SQL сформирован в database/migrations.sql.
 - bash -n: синтаксис init-server-env.sh, prepare-database.sh и install-docker-server.sh проверен без исполнения скриптов.
 
-Финальная контейнерная проверка выполняется пользователем на целевом сервере по SERVER_DEPLOYMENT.md: создание MariaDB, запуск web, /health/ready, расчёты и SELECT из HeidiSQL. Файл не утверждает, что приложение уже развёрнуто на целевом сервере.
+Эта запись отражает проверку исходников по состоянию на 27.10.2026.

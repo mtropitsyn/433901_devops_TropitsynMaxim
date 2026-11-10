@@ -5,37 +5,7 @@
 
 В ветке `kafka` форма ASP.NET Core отправляет операнды и операцию в общий учебный брокер через `Confluent.Kafka` 2.8.0. Фоновый консьюмер выполняет расчёт и сохраняет результат через EF Core в MariaDB. Страница результата находит сохранённую запись по GUID, который совпадает с ключом сообщения Kafka.
 
-[Развёртывание на учебном сервере и скриншоты для отчёта](Docs/KAFKA_DEPLOYMENT.md).
-[Первичная настройка Linux-сервера и HeidiSQL](Docs/SERVER_DEPLOYMENT.md).
-
-| Параметр | Значение |
-| --- | --- |
-| Сайт | http://IP_СЕРВЕРА:5316 |
-| Compose-проект | tropitsyn16 |
-| Контейнеры | tropitsyn16-web-1, tropitsyn16-db-1 |
-| База | 16-WebCalculatorDb |
-| Пользователь БД | calculator |
-| Таблица | DataInputVariants |
-| Идентификатор запроса в БД | RequestId. Для старых записей поле пустое |
-| Kafka-брокер по умолчанию | 93.88.178.186:9094 |
-| Топик | tropitsyn16-calculations |
-| Приложение → БД | db:3306 во внутренней сети Docker |
-| БД на сервере | 127.0.0.1:53316 |
-| HeidiSQL через туннель PuTTY | 127.0.0.1:13316 на компьютере пользователя |
-| Постоянный том | tropitsyn16_mariadb-data при стандартном имени проекта |
-
-Порт сайта 5316 выделен пользователю. Порт 53316 выбран для loopback-доступа к БД; если он занят, нужно изменить DB_PORT в .env и Destination туннеля. Пароли генерируются на сервере и не входят в Git.
-
 При старте `Database.MigrateAsync()` добавляет отсутствующие миграции. Миграция Kafka добавляет колонку `RequestId` и уникальный индекс. Консьюмер подтверждает смещение после записи, а при повторной доставке использует уже сохранённую строку.
-
-Проверка файлов проекта без контейнеров:
-
-```text
-dotnet tool restore
-dotnet build CalculatorDocker.sln -c Release
-dotnet run --project CalculatorWeb.Checks -c Release --no-build
-dotnet ef migrations has-pending-model-changes --project CalculatorWeb --configuration Release --no-build
-```
 
 GitHub Actions проверяет сборку, сценарии контроллера и соответствие модели миграциям. Интеграционная проверка с общим брокером и MariaDB выполняется на учебном сервере.
 
