@@ -19,7 +19,7 @@
                 <label><input asp-for="Operation" id="operation-multiply" type="radio" value="multiply" /><span><b>×</b> Умножение</span></label>
                 <label><input asp-for="Operation" id="operation-divide" type="radio" value="divide" /><span><b>÷</b> Деление</span></label>
             </div></fieldset>
-            <button class="calculate-button" type="submit">Вычислить <span aria-hidden="true">→</span></button>
+            <button class="calculate-button" type="submit">Рассчитать <span aria-hidden="true">→</span></button>
             <p id="number-help" class="input-hint">Введите два числа и выберите операцию.</p>
         </form>
         @if (Model.Result is not null)
