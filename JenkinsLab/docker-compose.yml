@@ -1,0 +1,17 @@
+name: tropitsyn16-jenkins
+
+services:
+  web:
+    image: tropitsyn16-calculator-jenkins:latest
+    container_name: web-app-calculator-jenkins-16
+    build: .
+    network_mode: bridge
+    ports:
+      - "0.0.0.0:5216:5016"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "dotnet", "CalculatorWeb.dll", "--health-check"]
+      interval: 5s
+      timeout: 5s
+      retries: 6
+      start_period: 10s

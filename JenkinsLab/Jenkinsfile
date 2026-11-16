@@ -1,0 +1,51 @@
+pipeline {
+    agent any
+
+    options {
+        disableConcurrentBuilds()
+        timeout(time: 15, unit: 'MINUTES')
+    }
+
+    triggers {
+        pollSCM('H/2 * * * *')
+    }
+
+    environment {
+        BUILDKIT_PROGRESS = 'plain'
+    }
+
+    stages {
+        stage('Hello') {
+            steps {
+                echo 'Calculator | Tropitsyn | variant 16'
+                sh 'git log -1 --oneline'
+                sh 'docker compose version'
+            }
+        }
+
+        stage('Build Docker Image') {
+            steps {
+                dir('JenkinsLab') {
+                    sh 'docker compose build web'
+                }
+            }
+        }
+
+        stage('Start Docker Container') {
+            steps {
+                dir('JenkinsLab') {
+                    sh 'docker compose up -d --wait web'
+                }
+            }
+        }
+
+        stage('Verify Application') {
+            steps {
+                dir('JenkinsLab') {
+                    sh 'docker compose ps web'
+                    sh 'docker compose exec -T web dotnet CalculatorWeb.dll --health-check'
+                }
+            }
+        }
+    }
+}
