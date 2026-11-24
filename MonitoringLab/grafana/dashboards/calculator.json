@@ -1,0 +1,67 @@
+{
+  "uid": "calculator16",
+  "title": "Калькулятор — Тропицын Максим, НМТ-433901",
+  "tags": ["lab6", "calculator", "tropitsyn16"],
+  "timezone": "browser",
+  "schemaVersion": 41,
+  "version": 1,
+  "editable": true,
+  "refresh": "10s",
+  "time": { "from": "now-15m", "to": "now" },
+  "panels": [
+    {
+      "id": 1,
+      "title": "Среднее время выполнения",
+      "description": "Среднее время HTTP-запроса за минуту. Метрики и проверки здоровья исключены.",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 24, "x": 0, "y": 0 },
+      "datasource": { "type": "prometheus", "uid": "prometheus16" },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum(rate(http_server_request_duration_seconds_sum{job=\"calculator16\",http_route!~\"/health|/metrics\",http_route!=\"\"}[1m])) / sum(rate(http_server_request_duration_seconds_count{job=\"calculator16\",http_route!~\"/health|/metrics\",http_route!=\"\"}[1m]))",
+          "legendFormat": "Среднее время",
+          "range": true
+        }
+      ],
+      "fieldConfig": { "defaults": { "unit": "s", "min": 0 }, "overrides": [] },
+      "options": { "tooltip": { "mode": "single" }, "legend": { "displayMode": "list", "placement": "bottom" } }
+    },
+    {
+      "id": 2,
+      "title": "Количество запросов",
+      "description": "Прирост числа запросов за пять минут по маршрутам.",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 24, "x": 0, "y": 8 },
+      "datasource": { "type": "prometheus", "uid": "prometheus16" },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum by (http_route) (increase(http_server_request_duration_seconds_count{job=\"calculator16\",http_route!~\"/health|/metrics\",http_route!=\"\"}[5m]))",
+          "legendFormat": "{{http_route}}",
+          "range": true
+        }
+      ],
+      "fieldConfig": { "defaults": { "unit": "short", "min": 0 }, "overrides": [] },
+      "options": { "tooltip": { "mode": "multi" }, "legend": { "displayMode": "list", "placement": "bottom" } }
+    },
+    {
+      "id": 3,
+      "title": "Ошибки",
+      "description": "Прирост числа HTTP 5xx за пять минут.",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 24, "x": 0, "y": 16 },
+      "datasource": { "type": "prometheus", "uid": "prometheus16" },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum(increase(http_server_request_duration_seconds_count{job=\"calculator16\",http_response_status_code=~\"5..\"}[5m])) or vector(0)",
+          "legendFormat": "Ошибки HTTP 5xx",
+          "range": true
+        }
+      ],
+      "fieldConfig": { "defaults": { "unit": "short", "min": 0 }, "overrides": [] },
+      "options": { "tooltip": { "mode": "single" }, "legend": { "displayMode": "list", "placement": "bottom" } }
+    }
+  ]
+}

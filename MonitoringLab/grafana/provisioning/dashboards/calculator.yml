@@ -1,0 +1,12 @@
+apiVersion: 1
+
+providers:
+  - name: Calculator16
+    orgId: 1
+    folder: "ЛР 6"
+    type: file
+    disableDeletion: false
+    allowUiUpdates: true
+    updateIntervalSeconds: 30
+    options:
+      path: /var/lib/grafana/dashboards

@@ -1,0 +1,14 @@
+.git
+.github
+.vs
+.idea
+**/bin
+**/obj
+**/*.user
+**/*.suo
+docs
+output
+tmp
+scripts
+methodology-page.html
+README.md

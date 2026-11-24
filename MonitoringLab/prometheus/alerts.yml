@@ -1,0 +1,33 @@
+groups:
+  - name: calculator16
+    rules:
+      - alert: Calculator16Unavailable
+        expr: up{job="calculator16"} == 0
+        for: 30s
+        labels:
+          severity: critical
+        annotations:
+          summary: "Калькулятор варианта 16 недоступен"
+          description: "Prometheus не может собрать метрики более 30 секунд."
+
+      - alert: Calculator16HighLatency
+        expr: |
+          sum(rate(http_server_request_duration_seconds_sum{job="calculator16",http_route!~"/health|/metrics",http_route!=""}[1m]))
+          /
+          sum(rate(http_server_request_duration_seconds_count{job="calculator16",http_route!~"/health|/metrics",http_route!=""}[1m])) > 0.5
+        for: 30s
+        labels:
+          severity: warning
+        annotations:
+          summary: "Высокое время отклика калькулятора"
+          description: "Среднее время HTTP-запроса превышает 0,5 секунды."
+
+      - alert: Calculator16ServerErrors
+        expr: |
+          sum(increase(http_server_request_duration_seconds_count{job="calculator16",http_response_status_code=~"5.."}[2m])) > 2
+        for: 10s
+        labels:
+          severity: warning
+        annotations:
+          summary: "Ошибки HTTP 5xx калькулятора"
+          description: "За последние две минуты обнаружено более двух ошибок."
