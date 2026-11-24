@@ -1,4 +1,14 @@
 {
+  "__inputs": [
+    {
+      "name": "DS_PROMETHEUS",
+      "label": "Общий Prometheus",
+      "description": "Выбери существующий источник данных общего Prometheus.",
+      "type": "datasource",
+      "pluginId": "prometheus",
+      "pluginName": "Prometheus"
+    }
+  ],
   "uid": "calculator16",
   "title": "Калькулятор — Тропицын Максим, НМТ-433901",
   "tags": ["lab6", "calculator", "tropitsyn16"],
@@ -8,6 +18,17 @@
   "editable": true,
   "refresh": "10s",
   "time": { "from": "now-15m", "to": "now" },
+  "templating": {
+    "list": [
+      {
+        "name": "calculator_instance",
+        "label": "Instance калькулятора",
+        "type": "textbox",
+        "query": "93.88.178.186:5316",
+        "current": { "text": "93.88.178.186:5316", "value": "93.88.178.186:5316" }
+      }
+    ]
+  },
   "panels": [
     {
       "id": 1,
@@ -15,11 +36,12 @@
       "description": "Среднее время HTTP-запроса за минуту. Метрики и проверки здоровья исключены.",
       "type": "timeseries",
       "gridPos": { "h": 8, "w": 24, "x": 0, "y": 0 },
-      "datasource": { "type": "prometheus", "uid": "prometheus16" },
+      "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" },
       "targets": [
         {
           "refId": "A",
-          "expr": "sum(rate(http_server_request_duration_seconds_sum{job=\"calculator16\",http_route!~\"/health|/metrics\",http_route!=\"\"}[1m])) / sum(rate(http_server_request_duration_seconds_count{job=\"calculator16\",http_route!~\"/health|/metrics\",http_route!=\"\"}[1m]))",
+          "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" },
+          "expr": "sum(rate(http_server_request_duration_seconds_sum{instance=\"$calculator_instance\",http_route!~\"/health|/metrics\",http_route!=\"\"}[$__rate_interval])) / sum(rate(http_server_request_duration_seconds_count{instance=\"$calculator_instance\",http_route!~\"/health|/metrics\",http_route!=\"\"}[$__rate_interval]))",
           "legendFormat": "Среднее время",
           "range": true
         }
@@ -33,11 +55,12 @@
       "description": "Прирост числа запросов за пять минут по маршрутам.",
       "type": "timeseries",
       "gridPos": { "h": 8, "w": 24, "x": 0, "y": 8 },
-      "datasource": { "type": "prometheus", "uid": "prometheus16" },
+      "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" },
       "targets": [
         {
           "refId": "A",
-          "expr": "sum by (http_route) (increase(http_server_request_duration_seconds_count{job=\"calculator16\",http_route!~\"/health|/metrics\",http_route!=\"\"}[5m]))",
+          "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" },
+          "expr": "sum by (http_route) (increase(http_server_request_duration_seconds_count{instance=\"$calculator_instance\",http_route!~\"/health|/metrics\",http_route!=\"\"}[5m]))",
           "legendFormat": "{{http_route}}",
           "range": true
         }
@@ -51,11 +74,12 @@
       "description": "Прирост числа HTTP 5xx за пять минут.",
       "type": "timeseries",
       "gridPos": { "h": 8, "w": 24, "x": 0, "y": 16 },
-      "datasource": { "type": "prometheus", "uid": "prometheus16" },
+      "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" },
       "targets": [
         {
           "refId": "A",
-          "expr": "sum(increase(http_server_request_duration_seconds_count{job=\"calculator16\",http_response_status_code=~\"5..\"}[5m])) or vector(0)",
+          "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" },
+          "expr": "sum(increase(http_server_request_duration_seconds_count{instance=\"$calculator_instance\",http_response_status_code=~\"5..\"}[5m])) or 0 * max(up{instance=\"$calculator_instance\"})",
           "legendFormat": "Ошибки HTTP 5xx",
           "range": true
         }

@@ -2,7 +2,10 @@
 set -euo pipefail
 cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.."
 
-port=$(sed -n 's/^APP_PORT=//p' .env | tr -d '\r')
+port=${APP_PORT:-}
+if [[ -z $port && -r .env ]]; then
+    port=$(sed -n 's/^APP_PORT=//p' .env | tr -d '\r')
+fi
 port=${port:-5316}
 case "${1:-normal}" in
     normal) path=/ ;;
